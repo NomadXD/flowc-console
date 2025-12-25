@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
 import { type Gateway } from '@/data/mock/flowc-data'
 import { ChevronDown, ChevronRight } from 'lucide-react'
@@ -69,9 +70,15 @@ export const gatewaysColumns: ColumnDef<Gateway>[] = [
       <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => (
-      <LongText className='max-w-36 ps-3 font-medium'>
-        {row.getValue('name')}
-      </LongText>
+      <Link
+        to='/gateways/$gatewayId'
+        params={{ gatewayId: row.original.id }}
+        className='hover:underline'
+      >
+        <LongText className='max-w-36 ps-3 font-medium'>
+          {row.getValue('name')}
+        </LongText>
+      </Link>
     ),
     meta: {
       className: cn(
