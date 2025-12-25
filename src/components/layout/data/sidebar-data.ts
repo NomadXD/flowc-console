@@ -1,162 +1,116 @@
 import {
-  Construction,
+  Activity,
+  BarChart3,
+  Bell,
+  CheckCircle,
+  Code,
+  Globe,
   LayoutDashboard,
   Monitor,
-  Bug,
-  ListTodo,
-  FileX,
-  HelpCircle,
-  Lock,
-  Bell,
-  Package,
   Palette,
-  ServerOff,
+  Radio,
+  Rocket,
+  Server,
   Settings,
-  Wrench,
+  Shield,
+  Upload,
   UserCog,
-  UserX,
-  Users,
-  MessagesSquare,
-  ShieldCheck,
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
+  Wrench,
+  Zap,
 } from 'lucide-react'
-import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
+    name: 'Admin User',
+    email: 'admin@flowc.dev',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
-      name: 'Shadcn Admin',
-      logo: Command,
-      plan: 'Vite + ShadcnUI',
-    },
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
+      name: 'FlowC Gateway',
+      logo: Zap,
+      plan: 'v2.0.0',
     },
   ],
   navGroups: [
     {
-      title: 'General',
+      title: 'Overview',
       items: [
         {
           title: 'Dashboard',
           url: '/',
           icon: LayoutDashboard,
         },
+      ],
+    },
+    {
+      title: 'Infrastructure',
+      items: [
         {
-          title: 'Tasks',
-          url: '/tasks',
-          icon: ListTodo,
+          title: 'Gateways',
+          url: '/gateways',
+          icon: Server,
         },
         {
-          title: 'Apps',
-          url: '/apps',
-          icon: Package,
+          title: 'Listeners',
+          url: '/listeners',
+          icon: Radio,
         },
         {
-          title: 'Chats',
-          url: '/chats',
-          badge: '3',
-          icon: MessagesSquare,
-        },
-        {
-          title: 'Users',
-          url: '/users',
-          icon: Users,
-        },
-        {
-          title: 'Secured by Clerk',
-          icon: ClerkLogo,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/clerk/sign-in',
-            },
-            {
-              title: 'Sign Up',
-              url: '/clerk/sign-up',
-            },
-            {
-              title: 'User Management',
-              url: '/clerk/user-management',
-            },
-          ],
+          title: 'Environments',
+          url: '/environments',
+          icon: Globe,
         },
       ],
     },
     {
-      title: 'Pages',
+      title: 'Operations',
       items: [
         {
-          title: 'Auth',
-          icon: ShieldCheck,
-          items: [
-            {
-              title: 'Sign In',
-              url: '/sign-in',
-            },
-            {
-              title: 'Sign In (2 Col)',
-              url: '/sign-in-2',
-            },
-            {
-              title: 'Sign Up',
-              url: '/sign-up',
-            },
-            {
-              title: 'Forgot Password',
-              url: '/forgot-password',
-            },
-            {
-              title: 'OTP',
-              url: '/otp',
-            },
-          ],
+          title: 'Deployments',
+          url: '/deployments',
+          icon: Rocket,
         },
         {
-          title: 'Errors',
-          icon: Bug,
-          items: [
-            {
-              title: 'Unauthorized',
-              url: '/errors/unauthorized',
-              icon: Lock,
-            },
-            {
-              title: 'Forbidden',
-              url: '/errors/forbidden',
-              icon: UserX,
-            },
-            {
-              title: 'Not Found',
-              url: '/errors/not-found',
-              icon: FileX,
-            },
-            {
-              title: 'Internal Server Error',
-              url: '/errors/internal-server-error',
-              icon: ServerOff,
-            },
-            {
-              title: 'Maintenance Error',
-              url: '/errors/maintenance-error',
-              icon: Construction,
-            },
-          ],
+          title: 'Deploy New API',
+          url: '/deployments/new',
+          icon: Upload,
+        },
+        {
+          title: 'Validate Config',
+          url: '/validate',
+          icon: CheckCircle,
+        },
+      ],
+    },
+    {
+      title: 'Policies & Rules',
+      items: [
+        {
+          title: 'Mediation Policies',
+          url: '/policies',
+          icon: Shield,
+        },
+      ],
+    },
+    {
+      title: 'Admin',
+      items: [
+        {
+          title: 'Config Inspector',
+          url: '/admin/config',
+          icon: Code,
+        },
+        {
+          title: 'Metrics & Stats',
+          url: '/admin/metrics',
+          icon: BarChart3,
+        },
+        {
+          title: 'Health Monitor',
+          url: '/admin/health',
+          icon: Activity,
         },
       ],
     },
@@ -193,11 +147,6 @@ export const sidebarData: SidebarData = {
               icon: Monitor,
             },
           ],
-        },
-        {
-          title: 'Help Center',
-          url: '/help-center',
-          icon: HelpCircle,
         },
       ],
     },
