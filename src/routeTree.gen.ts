@@ -28,8 +28,10 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedListenersIndexRouteImport } from './routes/_authenticated/listeners/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGatewaysIndexRouteImport } from './routes/_authenticated/gateways/index'
+import { Route as AuthenticatedEnvironmentsIndexRouteImport } from './routes/_authenticated/environments/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
@@ -136,6 +138,12 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedListenersIndexRoute =
+  AuthenticatedListenersIndexRouteImport.update({
+    id: '/listeners/',
+    path: '/listeners/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
@@ -146,6 +154,12 @@ const AuthenticatedGatewaysIndexRoute =
   AuthenticatedGatewaysIndexRouteImport.update({
     id: '/gateways/',
     path: '/gateways/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEnvironmentsIndexRoute =
+  AuthenticatedEnvironmentsIndexRouteImport.update({
+    id: '/environments/',
+    path: '/environments/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
@@ -236,8 +250,10 @@ export interface FileRoutesByFullPath {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/environments': typeof AuthenticatedEnvironmentsIndexRoute
   '/gateways': typeof AuthenticatedGatewaysIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/listeners': typeof AuthenticatedListenersIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -266,8 +282,10 @@ export interface FileRoutesByTo {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/environments': typeof AuthenticatedEnvironmentsIndexRoute
   '/gateways': typeof AuthenticatedGatewaysIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/listeners': typeof AuthenticatedListenersIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -301,8 +319,10 @@ export interface FileRoutesById {
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/environments/': typeof AuthenticatedEnvironmentsIndexRoute
   '/_authenticated/gateways/': typeof AuthenticatedGatewaysIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/listeners/': typeof AuthenticatedListenersIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -334,8 +354,10 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/environments'
     | '/gateways'
     | '/help-center'
+    | '/listeners'
     | '/settings/'
     | '/tasks'
     | '/users'
@@ -364,8 +386,10 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/environments'
     | '/gateways'
     | '/help-center'
+    | '/listeners'
     | '/settings'
     | '/tasks'
     | '/users'
@@ -398,8 +422,10 @@ export interface FileRouteTypes {
     | '/clerk/_authenticated/user-management'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
+    | '/_authenticated/environments/'
     | '/_authenticated/gateways/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/listeners/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
@@ -555,6 +581,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/listeners/': {
+      id: '/_authenticated/listeners/'
+      path: '/listeners'
+      fullPath: '/listeners'
+      preLoaderRoute: typeof AuthenticatedListenersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/help-center/': {
       id: '/_authenticated/help-center/'
       path: '/help-center'
@@ -567,6 +600,13 @@ declare module '@tanstack/react-router' {
       path: '/gateways'
       fullPath: '/gateways'
       preLoaderRoute: typeof AuthenticatedGatewaysIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/environments/': {
+      id: '/_authenticated/environments/'
+      path: '/environments'
+      fullPath: '/environments'
+      preLoaderRoute: typeof AuthenticatedEnvironmentsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/chats/': {
@@ -679,8 +719,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedEnvironmentsIndexRoute: typeof AuthenticatedEnvironmentsIndexRoute
   AuthenticatedGatewaysIndexRoute: typeof AuthenticatedGatewaysIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
+  AuthenticatedListenersIndexRoute: typeof AuthenticatedListenersIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
@@ -693,8 +735,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedEnvironmentsIndexRoute: AuthenticatedEnvironmentsIndexRoute,
   AuthenticatedGatewaysIndexRoute: AuthenticatedGatewaysIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
+  AuthenticatedListenersIndexRoute: AuthenticatedListenersIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
