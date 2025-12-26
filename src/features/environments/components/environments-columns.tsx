@@ -45,9 +45,20 @@ export const environmentsColumns: ColumnDef<Environment>[] = [
     ),
     cell: ({ row }) => {
       const style = getEnvironmentStyle(row.getValue('name'))
+      const env = row.original
       return (
         <div className='flex items-center gap-2 ps-3'>
-          <Badge variant={style.variant}>{style.label}</Badge>
+          <Link
+            to='/environments/$gatewayId/$port/$envName'
+            params={{
+              gatewayId: env.gatewayId,
+              port: env.port.toString(),
+              envName: env.name,
+            }}
+            className='hover:underline'
+          >
+            <Badge variant={style.variant}>{style.label}</Badge>
+          </Link>
         </div>
       )
     },

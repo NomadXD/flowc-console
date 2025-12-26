@@ -43,6 +43,7 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGatewaysGatewayIdRouteRouteImport } from './routes/_authenticated/gateways/$gatewayId/route'
+import { Route as AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport } from './routes/_authenticated/environments/$gatewayId/$port/$envName/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -224,6 +225,12 @@ const AuthenticatedGatewaysGatewayIdRouteRoute =
     path: '/gateways/$gatewayId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute =
+  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport.update({
+    id: '/environments/$gatewayId/$port/$envName',
+    path: '/environments/$gatewayId/$port/$envName',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -257,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -289,6 +297,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -326,6 +335,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -361,6 +371,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/environments/$gatewayId/$port/$envName'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/environments/$gatewayId/$port/$envName'
   id:
     | '__root__'
     | '/_authenticated'
@@ -429,6 +441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/environments/$gatewayId/$port/$envName'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -686,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGatewaysGatewayIdRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/environments/$gatewayId/$port/$envName': {
+      id: '/_authenticated/environments/$gatewayId/$port/$envName'
+      path: '/environments/$gatewayId/$port/$envName'
+      fullPath: '/environments/$gatewayId/$port/$envName'
+      preLoaderRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -725,6 +745,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedListenersIndexRoute: typeof AuthenticatedListenersIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -741,6 +762,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedListenersIndexRoute: AuthenticatedListenersIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute:
+    AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
