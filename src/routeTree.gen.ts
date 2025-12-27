@@ -44,6 +44,7 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGatewaysGatewayIdRouteRouteImport } from './routes/_authenticated/gateways/$gatewayId/route'
+import { Route as AuthenticatedDeploymentsNewIndexRouteImport } from './routes/_authenticated/deployments/new/index'
 import { Route as AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport } from './routes/_authenticated/environments/$gatewayId/$port/$envName/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
@@ -232,6 +233,12 @@ const AuthenticatedGatewaysGatewayIdRouteRoute =
     path: '/gateways/$gatewayId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDeploymentsNewIndexRoute =
+  AuthenticatedDeploymentsNewIndexRouteImport.update({
+    id: '/deployments/new/',
+    path: '/deployments/new/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute =
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport.update({
     id: '/environments/$gatewayId/$port/$envName',
@@ -272,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
   '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesByTo {
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
   '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesById {
@@ -345,6 +354,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/deployments/new/': typeof AuthenticatedDeploymentsNewIndexRoute
   '/_authenticated/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRouteTypes {
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/deployments/new'
     | '/environments/$gatewayId/$port/$envName'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/deployments/new'
     | '/environments/$gatewayId/$port/$envName'
   id:
     | '__root__'
@@ -454,6 +466,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/deployments/new/'
     | '/_authenticated/environments/$gatewayId/$port/$envName'
   fileRoutesById: FileRoutesById
 }
@@ -719,6 +732,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGatewaysGatewayIdRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/deployments/new/': {
+      id: '/_authenticated/deployments/new/'
+      path: '/deployments/new'
+      fullPath: '/deployments/new'
+      preLoaderRoute: typeof AuthenticatedDeploymentsNewIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/environments/$gatewayId/$port/$envName': {
       id: '/_authenticated/environments/$gatewayId/$port/$envName'
       path: '/environments/$gatewayId/$port/$envName'
@@ -766,6 +786,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedListenersIndexRoute: typeof AuthenticatedListenersIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedDeploymentsNewIndexRoute: typeof AuthenticatedDeploymentsNewIndexRoute
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 
@@ -784,6 +805,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedListenersIndexRoute: AuthenticatedListenersIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedDeploymentsNewIndexRoute: AuthenticatedDeploymentsNewIndexRoute,
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute:
     AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute,
 }
