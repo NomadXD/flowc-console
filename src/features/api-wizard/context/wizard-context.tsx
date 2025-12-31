@@ -15,9 +15,9 @@ import {
 } from '../data/schema'
 import {
   DEFAULT_API_INFO,
-  DEFAULT_DEPLOYMENT_TARGET,
   DEFAULT_UPSTREAM_CONFIG,
   DEFAULT_STRATEGY_OPTIONS,
+  DEFAULT_POLICIES_CONFIG,
   OPENAPI_FLOW_STEPS,
   SCRATCH_FLOW_STEPS,
   type WizardStep,
@@ -44,10 +44,10 @@ interface WizardContextValue {
   // Step validation
   isCurrentStepValid: () => Promise<boolean>
 
-  // Deployment
-  isDeploying: boolean
-  deployError: string | null
-  deploy: () => Promise<void>
+  // Save API
+  isSaving: boolean
+  saveError: string | null
+  saveAPI: () => Promise<void>
 
   // Generated output
   generatedYaml: string | null
@@ -57,12 +57,12 @@ interface WizardContextValue {
 const WizardContext = createContext<WizardContextValue | null>(null)
 
 const defaultValues: Partial<ApiWizardFormData> = {
-  sourceType: undefined,
+  sourceType: 'openapi',
   openApiFile: undefined,
   apiInfo: DEFAULT_API_INFO,
-  deploymentTarget: DEFAULT_DEPLOYMENT_TARGET,
   upstream: DEFAULT_UPSTREAM_CONFIG,
   strategy: DEFAULT_STRATEGY_OPTIONS,
+  policies: DEFAULT_POLICIES_CONFIG,
 }
 
 export function ApiWizardProvider({
@@ -73,8 +73,8 @@ export function ApiWizardProvider({
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] =
     useState<WizardStep>('source-selection')
-  const [isDeploying, setIsDeploying] = useState(false)
-  const [deployError, setDeployError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [generatedYaml] = useState<string | null>(null)
   const [generatedZip] = useState<Blob | null>(null)
 
@@ -122,25 +122,25 @@ export function ApiWizardProvider({
           })
           isValid = true
           break
-        case 'deployment-target':
-          await step3Schema.parseAsync({
-            deploymentTarget: form.getValues('deploymentTarget'),
-          })
-          isValid = true
-          break
         case 'upstream-config':
-          await step4Schema.parseAsync({
+          await step3Schema.parseAsync({
             upstream: form.getValues('upstream'),
           })
           isValid = true
           break
         case 'strategy-options':
-          await step5Schema.parseAsync({
+          await step4Schema.parseAsync({
             strategy: form.getValues('strategy'),
           })
           isValid = true
           break
-        case 'review-deploy':
+        case 'policies-config':
+          await step5Schema.parseAsync({
+            policies: form.getValues('policies'),
+          })
+          isValid = true
+          break
+        case 'review-save':
           isValid = true
           break
         default:
@@ -180,31 +180,33 @@ export function ApiWizardProvider({
     }
   }
 
-  // Deploy API
-  const deploy = async () => {
+  // Save API (as draft)
+  const saveAPI = async () => {
     try {
-      setIsDeploying(true)
-      setDeployError(null)
+      setIsSaving(true)
+      setSaveError(null)
 
       // Validate entire form
       const formData = form.getValues()
       await apiWizardFormSchema.parseAsync(formData)
 
       // TODO: Generate YAML and ZIP (implemented in later phases)
-      // TODO: Call deployment API
+      // TODO: Call API creation endpoint
 
-      // Mock deployment for now
+      // Mock API creation for now
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      toast.success('API deployed successfully!')
-      navigate({ to: '/deployments' })
+      // For now, just show success and navigate to APIs list
+      // Later, navigate to the newly created API detail page
+      toast.success('API created successfully!')
+      navigate({ to: '/apis' })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Deployment failed'
-      setDeployError(message)
+        error instanceof Error ? error.message : 'Failed to create API'
+      setSaveError(message)
       toast.error(message)
     } finally {
-      setIsDeploying(false)
+      setIsSaving(false)
     }
   }
 
@@ -221,9 +223,9 @@ export function ApiWizardProvider({
     canGoNext,
     isOpenApiFlow,
     isCurrentStepValid,
-    isDeploying,
-    deployError,
-    deploy,
+    isSaving,
+    saveError,
+    saveAPI,
     generatedYaml,
     generatedZip,
   }

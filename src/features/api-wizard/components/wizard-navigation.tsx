@@ -31,7 +31,7 @@ export function WizardNavigation({
       </Button>
       <Button onClick={onNext} disabled={!canGoNext || isLoading}>
         {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
-        {nextLabel ?? (isLastStep ? 'Deploy API' : 'Next')}
+        {nextLabel ?? (isLastStep ? 'Create API' : 'Continue')}
       </Button>
     </div>
   )

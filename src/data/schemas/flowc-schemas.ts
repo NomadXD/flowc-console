@@ -346,6 +346,102 @@ export type DeploymentStatsByGateway = z.infer<
 export type DeploymentActivity = z.infer<typeof deploymentActivitySchema>
 
 // ============================================================================
+// API Schema
+// ============================================================================
+
+export const apiStatusSchema = z.enum(['draft', 'ready', 'deployed', 'deprecated'])
+
+export const policyTypeExtendedSchema = z.enum([
+  'rate-limit',
+  'cors',
+  'jwt-auth',
+  'api-key',
+  'rbac',
+  'request-transform',
+  'response-transform',
+  'logging',
+  'ip-filter',
+  'custom',
+])
+
+export const inheritanceModeSchema = z.enum(['inherit', 'override', 'disable', 'add'])
+
+export const policyInstanceSchema = z.object({
+  id: z.string(),
+  policyType: policyTypeExtendedSchema,
+  order: z.number().int().positive(),
+  enabled: z.boolean(),
+  inheritanceMode: inheritanceModeSchema,
+  config: z.record(z.string(), z.unknown()),
+  customPolicyId: z.string().optional(),
+})
+
+export const openAPISpecSchema = z.object({
+  content: z.string(),
+  fileName: z.string(),
+  parsedInfo: z.object({
+    title: z.string(),
+    version: z.string(),
+    paths: z.array(z.string()),
+    servers: z.array(z.string()).optional(),
+  }).optional(),
+})
+
+export const upstreamConfigSchema = z.object({
+  host: z.string().min(1, 'Host is required'),
+  port: z.number().int().min(1).max(65535),
+  scheme: z.enum(['http', 'https']),
+  timeout: z.string().regex(/^\d+[smh]$/, 'Timeout must be in format like 30s, 5m, 1h'),
+})
+
+export const routingConfigSchema = z.object({
+  matchType: z.enum(['prefix', 'exact', 'regex']),
+  caseSensitive: z.boolean(),
+  loadBalancing: z.enum(['round-robin', 'random', 'least-conn']),
+})
+
+export const apiSchema = z.object({
+  id: z.string(),
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must be less than 100 characters')
+    .regex(/^[a-z0-9-]+$/, 'Name must contain only lowercase letters, numbers, and hyphens'),
+  version: z.string().regex(/^v?\d+\.\d+\.\d+$/, 'Version must be in format vX.Y.Z or X.Y.Z'),
+  displayName: z.string().min(1, 'Display name is required'),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional(),
+  context: z.string().regex(/^\/[a-z0-9-/]*$/, 'Context must start with / and contain only lowercase letters, numbers, hyphens, and slashes'),
+  status: apiStatusSchema,
+  spec: openAPISpecSchema.optional(),
+  upstream: upstreamConfigSchema,
+  routing: routingConfigSchema,
+  policyChain: z.array(policyInstanceSchema),
+  deployments: z.array(z.string()),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  createdBy: z.string(),
+})
+
+export const apiCreateSchema = apiSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  deployments: true,
+})
+
+export const apiUpdateSchema = apiCreateSchema.partial()
+
+export type API = z.infer<typeof apiSchema>
+export type APICreate = z.infer<typeof apiCreateSchema>
+export type APIUpdate = z.infer<typeof apiUpdateSchema>
+export type APIStatus = z.infer<typeof apiStatusSchema>
+export type PolicyInstance = z.infer<typeof policyInstanceSchema>
+export type InheritanceMode = z.infer<typeof inheritanceModeSchema>
+export type OpenAPISpec = z.infer<typeof openAPISpecSchema>
+export type UpstreamConfig = z.infer<typeof upstreamConfigSchema>
+export type RoutingConfig = z.infer<typeof routingConfigSchema>
+export type PolicyTypeExtended = z.infer<typeof policyTypeExtendedSchema>
+
+// ============================================================================
 // Validation Helper Functions
 // ============================================================================
 
@@ -391,6 +487,13 @@ export function validateDeploymentStats(data: unknown) {
   return deploymentStatsSchema.parse(data)
 }
 
+/**
+ * Validates API data and returns parsed result
+ */
+export function validateAPI(data: unknown) {
+  return apiSchema.parse(data)
+}
+
 // ============================================================================
 // Form Schemas (for React Hook Form)
 // ============================================================================
@@ -401,3 +504,4 @@ export const listenerFormSchema = listenerCreateSchema
 export const environmentFormSchema = environmentCreateSchema
 export const deploymentFormSchema = deploymentCreateSchema
 export const policyFormSchema = policyCreateSchema
+export const apiFormSchema = apiCreateSchema

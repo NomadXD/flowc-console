@@ -1,0 +1,23 @@
+// Re-export schemas from the central schemas file
+export {
+  apiSchema,
+  apiCreateSchema,
+  apiUpdateSchema,
+  apiStatusSchema,
+  policyInstanceSchema,
+  upstreamConfigSchema,
+  routingConfigSchema,
+  openAPISpecSchema,
+  inheritanceModeSchema,
+  policyTypeExtendedSchema,
+  type API,
+  type APICreate,
+  type APIUpdate,
+  type APIStatus,
+  type PolicyInstance,
+  type InheritanceMode,
+  type UpstreamConfig,
+  type RoutingConfig,
+  type OpenAPISpec,
+  type PolicyTypeExtended,
+} from '@/data/schemas/flowc-schemas'

@@ -9,15 +9,10 @@ import type {
 // ============================================================================
 export const DEFAULT_API_INFO = {
   name: '',
+  displayName: '',
   version: '1.0.0',
   context: '/',
   description: '',
-}
-
-export const DEFAULT_DEPLOYMENT_TARGET = {
-  gatewayId: '',
-  port: 443,
-  environmentName: '',
 }
 
 export const DEFAULT_UPSTREAM_CONFIG = {
@@ -32,6 +27,10 @@ export const DEFAULT_STRATEGY_OPTIONS = {
   deployment: { type: 'basic' as const },
   routeMatching: { type: 'prefix' as RouteMatchingType, caseSensitive: true },
   loadBalancing: { type: 'round-robin' as LoadBalancingType },
+}
+
+export const DEFAULT_POLICIES_CONFIG = {
+  policyChain: [],
 }
 
 // ============================================================================
@@ -62,10 +61,10 @@ export const STEP_LABELS = {
   'openapi-upload': 'Upload Spec',
   'api-basics': 'API Basics',
   'api-info': 'API Info',
-  'deployment-target': 'Deploy Target',
   'upstream-config': 'Upstream',
   'strategy-options': 'Strategy',
-  'review-deploy': 'Review',
+  'policies-config': 'Policies',
+  'review-save': 'Review',
 }
 
 // ============================================================================
@@ -76,30 +75,30 @@ export type WizardStep =
   | 'openapi-upload'
   | 'api-basics'
   | 'api-info'
-  | 'deployment-target'
   | 'upstream-config'
   | 'strategy-options'
-  | 'review-deploy'
+  | 'policies-config'
+  | 'review-save'
 
 // OpenAPI flow steps
 export const OPENAPI_FLOW_STEPS: WizardStep[] = [
   'source-selection',
   'openapi-upload',
   'api-info',
-  'deployment-target',
   'upstream-config',
   'strategy-options',
-  'review-deploy',
+  'policies-config',
+  'review-save',
 ]
 
 // Scratch flow steps
 export const SCRATCH_FLOW_STEPS: WizardStep[] = [
   'source-selection',
   'api-basics',
-  'deployment-target',
   'upstream-config',
   'strategy-options',
-  'review-deploy',
+  'policies-config',
+  'review-save',
 ]
 
 // ============================================================================

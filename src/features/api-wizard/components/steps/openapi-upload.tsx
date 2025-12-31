@@ -37,6 +37,7 @@ export function OpenApiUploadStep() {
 
       form.setValue('apiInfo', {
         name: currentApiInfo.name || sanitizedName,
+        displayName: currentApiInfo.displayName || parsed.title,
         version: parsed.version || currentApiInfo.version,
         context: currentApiInfo.context || sanitizeContextPath(sanitizedName),
         description: parsed.description || currentApiInfo.description,

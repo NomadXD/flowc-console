@@ -6,14 +6,6 @@ interface FlowcConfig {
   version: string
   description: string
   context: string
-  gateway: {
-    gateway_id: string
-    port: number
-    environment: string
-    virtual_host: {
-      domains: string[]
-    }
-  }
   upstream: {
     host: string
     port: number
@@ -34,23 +26,17 @@ interface FlowcConfig {
   }
 }
 
+// Note: This function is currently not used in the new API creation flow
+// It's kept for potential future use when deploying APIs
 export function generateFlowcYaml(
   formData: ApiWizardFormData,
-  environmentHostname: string
+  _environmentHostname?: string
 ): string {
   const config: FlowcConfig = {
     name: formData.apiInfo.name,
     version: formData.apiInfo.version,
     description: formData.apiInfo.description || '',
     context: formData.apiInfo.context,
-    gateway: {
-      gateway_id: formData.deploymentTarget.gatewayId,
-      port: formData.deploymentTarget.port,
-      environment: formData.deploymentTarget.environmentName,
-      virtual_host: {
-        domains: [environmentHostname],
-      },
-    },
     upstream: {
       host: formData.upstream.host,
       port: formData.upstream.port,

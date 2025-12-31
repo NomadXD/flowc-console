@@ -17,15 +17,15 @@ export function WizardContainer({ children }: WizardContainerProps) {
     goBack,
     canGoBack,
     canGoNext,
-    isDeploying,
-    deploy,
+    isSaving,
+    saveAPI,
   } = useApiWizard()
 
   const isLastStep = stepIndex === totalSteps - 1
 
   const handleNext = async () => {
     if (isLastStep) {
-      await deploy()
+      await saveAPI()
     } else {
       await goNext()
     }
@@ -35,10 +35,10 @@ export function WizardContainer({ children }: WizardContainerProps) {
     <div className='container mx-auto py-8 max-w-5xl'>
       <div className='mb-8'>
         <h1 className='text-3xl font-bold tracking-tight'>
-          Create & Deploy API
+          Create New API
         </h1>
         <p className='text-muted-foreground mt-2'>
-          Configure and deploy your API to the FlowC Gateway
+          Configure your API and save it to the FlowC Gateway
         </p>
       </div>
 
@@ -56,7 +56,7 @@ export function WizardContainer({ children }: WizardContainerProps) {
           onNext={handleNext}
           canGoBack={canGoBack}
           canGoNext={canGoNext}
-          isLoading={isDeploying}
+          isLoading={isSaving}
           isLastStep={isLastStep}
         />
       </Card>

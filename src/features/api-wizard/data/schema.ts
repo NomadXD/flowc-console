@@ -17,6 +17,10 @@ export const apiInfoSchema = z.object({
       /^[a-z0-9-]+$/,
       'Name must contain only lowercase letters, numbers, and hyphens'
     ),
+  displayName: z
+    .string()
+    .min(2, 'Display name must be at least 2 characters')
+    .max(100, 'Display name must be less than 100 characters'),
   version: z
     .string()
     .regex(/^\d+\.\d+\.\d+$/, 'Version must be in format X.Y.Z (e.g., 1.0.0)'),
@@ -31,15 +35,6 @@ export const apiInfoSchema = z.object({
     .string()
     .max(500, 'Description must be less than 500 characters')
     .optional(),
-})
-
-// ============================================================================
-// Deployment Target Schema
-// ============================================================================
-export const deploymentTargetSchema = z.object({
-  gatewayId: z.string().min(1, 'Gateway is required'),
-  port: z.number().int().min(1).max(65535),
-  environmentName: z.string().min(1, 'Environment is required'),
 })
 
 // ============================================================================
@@ -91,6 +86,34 @@ export const strategyOptionsSchema = z.object({
 })
 
 // ============================================================================
+// Policies Configuration Schema
+// ============================================================================
+export const policyTypeSchema = z.enum([
+  'rate-limit',
+  'cors',
+  'jwt-auth',
+  'api-key',
+  'rbac',
+  'request-transform',
+  'response-transform',
+  'logging',
+  'ip-filter',
+  'custom',
+])
+
+export const policyInstanceSchema = z.object({
+  id: z.string(),
+  policyType: policyTypeSchema,
+  order: z.number().int().positive(),
+  enabled: z.boolean(),
+  config: z.record(z.string(), z.unknown()),
+})
+
+export const policiesConfigSchema = z.object({
+  policyChain: z.array(policyInstanceSchema),
+})
+
+// ============================================================================
 // OpenAPI File Schema (for validation)
 // ============================================================================
 export const openApiFileSchema = z.object({
@@ -127,14 +150,14 @@ export const apiWizardFormSchema = z.object({
   // API information
   apiInfo: apiInfoSchema,
 
-  // Deployment target
-  deploymentTarget: deploymentTargetSchema,
-
   // Upstream configuration
   upstream: upstreamConfigSchema,
 
   // Strategy options
   strategy: strategyOptionsSchema,
+
+  // Policies configuration
+  policies: policiesConfigSchema,
 })
 
 // ============================================================================
@@ -160,15 +183,15 @@ export const step2Schema = z.object({
 })
 
 export const step3Schema = z.object({
-  deploymentTarget: deploymentTargetSchema,
-})
-
-export const step4Schema = z.object({
   upstream: upstreamConfigSchema,
 })
 
-export const step5Schema = z.object({
+export const step4Schema = z.object({
   strategy: strategyOptionsSchema,
+})
+
+export const step5Schema = z.object({
+  policies: policiesConfigSchema,
 })
 
 // ============================================================================
@@ -176,9 +199,11 @@ export const step5Schema = z.object({
 // ============================================================================
 export type SourceType = z.infer<typeof sourceTypeSchema>
 export type ApiInfo = z.infer<typeof apiInfoSchema>
-export type DeploymentTarget = z.infer<typeof deploymentTargetSchema>
 export type UpstreamConfig = z.infer<typeof upstreamConfigSchema>
 export type StrategyOptions = z.infer<typeof strategyOptionsSchema>
+export type PoliciesConfig = z.infer<typeof policiesConfigSchema>
+export type PolicyInstance = z.infer<typeof policyInstanceSchema>
+export type PolicyType = z.infer<typeof policyTypeSchema>
 export type OpenApiFile = z.infer<typeof openApiFileSchema>
 export type ApiWizardFormData = z.infer<typeof apiWizardFormSchema>
 export type RouteMatchingType = z.infer<typeof routeMatchingTypeSchema>

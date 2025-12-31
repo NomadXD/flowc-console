@@ -5,15 +5,16 @@ import {
   CheckCircle,
   Code,
   Globe,
+  Layers,
   LayoutDashboard,
   Monitor,
   Palette,
+  Plus,
   Radio,
   Rocket,
   Server,
   Settings,
   Shield,
-  Upload,
   UserCog,
   Wrench,
   Zap,
@@ -45,6 +46,26 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
+      title: 'API Management',
+      items: [
+        {
+          title: 'APIs',
+          url: '/apis',
+          icon: Layers,
+        },
+        {
+          title: 'Create API',
+          url: '/apis/new',
+          icon: Plus,
+        },
+        {
+          title: 'Deployments',
+          url: '/deployments',
+          icon: Rocket,
+        },
+      ],
+    },
+    {
       title: 'Infrastructure',
       items: [
         {
@@ -65,18 +86,8 @@ export const sidebarData: SidebarData = {
       ],
     },
     {
-      title: 'Operations',
+      title: 'Tools',
       items: [
-        {
-          title: 'Deployments',
-          url: '/deployments',
-          icon: Rocket,
-        },
-        {
-          title: 'Deploy New API',
-          url: '/deployments/new',
-          icon: Upload,
-        },
         {
           title: 'Validate Config',
           url: '/validate',

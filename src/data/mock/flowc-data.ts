@@ -91,6 +91,84 @@ export interface DeploymentStats {
   recentActivity: { timestamp: string; count: number }[] // for charts
 }
 
+export interface API {
+  id: string
+  name: string
+  version: string
+  displayName: string
+  description?: string
+  context: string // Base path, e.g., "/orders"
+
+  // Status
+  status: 'draft' | 'ready' | 'deployed' | 'deprecated'
+
+  // OpenAPI Spec
+  spec?: {
+    content: string // OpenAPI YAML/JSON content
+    fileName: string
+    parsedInfo?: {
+      title: string
+      version: string
+      paths: string[]
+      servers?: string[]
+    }
+  }
+
+  // Upstream Configuration
+  upstream: {
+    host: string
+    port: number
+    scheme: 'http' | 'https'
+    timeout: string
+  }
+
+  // Routing Strategy
+  routing: {
+    matchType: 'prefix' | 'exact' | 'regex'
+    caseSensitive: boolean
+    loadBalancing: 'round-robin' | 'random' | 'least-conn'
+  }
+
+  // Policy Chain (ordered, per-API)
+  policyChain: PolicyInstance[]
+
+  // Deployments (where this API is deployed)
+  deployments: string[] // deployment IDs
+
+  // Metadata
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+}
+
+export interface PolicyInstance {
+  id: string
+  policyType: PolicyType
+  order: number // Execution order (1-based)
+  enabled: boolean
+
+  // Inheritance mode (when deployed to environment)
+  inheritanceMode: 'inherit' | 'override' | 'disable' | 'add'
+
+  // Configuration
+  config: Record<string, unknown>
+
+  // For custom policies
+  customPolicyId?: string // Reference to uploaded WASM/script
+}
+
+export type PolicyType =
+  | 'rate-limit'
+  | 'cors'
+  | 'jwt-auth'
+  | 'api-key'
+  | 'rbac'
+  | 'request-transform'
+  | 'response-transform'
+  | 'logging'
+  | 'ip-filter'
+  | 'custom'
+
 // ============================================================================
 // Mock Data Generation
 // ============================================================================
@@ -727,6 +805,411 @@ export const mockPolicies: MediationPolicy[] = [
   },
 ]
 
+// APIs
+export const mockAPIs: API[] = [
+  {
+    id: 'api-001',
+    name: 'user-service',
+    version: 'v2.1.0',
+    displayName: 'User Service API',
+    description: 'User management and authentication service',
+    context: '/users',
+    status: 'deployed',
+    spec: {
+      content: '# OpenAPI spec content here',
+      fileName: 'user-service-openapi.yaml',
+      parsedInfo: {
+        title: 'User Service API',
+        version: 'v2.1.0',
+        paths: ['/users', '/users/{id}', '/users/profile'],
+        servers: ['https://api.example.com'],
+      },
+    },
+    upstream: {
+      host: 'user-service.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '30s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-001',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'override',
+        config: {
+          requestsPerMinute: 1000,
+          burstSize: 100,
+        },
+      },
+      {
+        id: 'pol-inst-002',
+        policyType: 'jwt-auth',
+        order: 2,
+        enabled: true,
+        inheritanceMode: 'add',
+        config: {
+          issuer: 'https://auth.example.com',
+          audience: 'user-service',
+        },
+      },
+    ],
+    deployments: ['dep-001'],
+    createdAt: '2024-11-15T10:00:00Z',
+    updatedAt: '2025-01-20T10:30:00Z',
+    createdBy: 'admin@example.com',
+  },
+  {
+    id: 'api-002',
+    name: 'auth-service',
+    version: 'v1.5.2',
+    displayName: 'Authentication Service',
+    description: 'OAuth2 and JWT authentication service',
+    context: '/auth',
+    status: 'deployed',
+    upstream: {
+      host: 'auth-service.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '15s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-003',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'override',
+        config: {
+          requestsPerMinute: 500,
+          burstSize: 50,
+        },
+      },
+      {
+        id: 'pol-inst-004',
+        policyType: 'cors',
+        order: 2,
+        enabled: true,
+        inheritanceMode: 'inherit',
+        config: {},
+      },
+    ],
+    deployments: ['dep-002'],
+    createdAt: '2024-10-20T14:30:00Z',
+    updatedAt: '2025-01-19T15:20:00Z',
+    createdBy: 'admin@example.com',
+  },
+  {
+    id: 'api-003',
+    name: 'payment-gateway',
+    version: 'v3.0.1',
+    displayName: 'Payment Gateway API',
+    description: 'Payment processing and transaction management',
+    context: '/payments',
+    status: 'deployed',
+    upstream: {
+      host: 'payment-gateway.internal',
+      port: 8443,
+      scheme: 'https',
+      timeout: '60s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'least-conn',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-005',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'override',
+        config: {
+          requestsPerMinute: 100,
+          burstSize: 10,
+        },
+      },
+      {
+        id: 'pol-inst-006',
+        policyType: 'jwt-auth',
+        order: 2,
+        enabled: true,
+        inheritanceMode: 'add',
+        config: {
+          issuer: 'https://auth.example.com',
+          audience: 'payment-gateway',
+        },
+      },
+      {
+        id: 'pol-inst-007',
+        policyType: 'rbac',
+        order: 3,
+        enabled: true,
+        inheritanceMode: 'add',
+        config: {
+          rules: [
+            {
+              path: '/payments/admin/*',
+              methods: ['GET', 'POST', 'DELETE'],
+              requiredRoles: ['admin'],
+            },
+          ],
+        },
+      },
+    ],
+    deployments: ['dep-003'],
+    createdAt: '2024-09-10T08:00:00Z',
+    updatedAt: '2025-01-18T09:15:00Z',
+    createdBy: 'deploy-bot@example.com',
+  },
+  {
+    id: 'api-004',
+    name: 'notification-service',
+    version: 'v1.2.0',
+    displayName: 'Notification Service',
+    description: 'Email, SMS, and push notification service',
+    context: '/notifications',
+    status: 'deployed',
+    upstream: {
+      host: 'notification-service.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '20s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-008',
+        policyType: 'logging',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'inherit',
+        config: {},
+      },
+    ],
+    deployments: ['dep-004'],
+    createdAt: '2024-12-05T11:00:00Z',
+    updatedAt: '2025-01-21T11:00:00Z',
+    createdBy: 'developer@example.com',
+  },
+  {
+    id: 'api-005',
+    name: 'inventory-api',
+    version: 'v2.0.0',
+    displayName: 'Inventory Management API',
+    description: 'Product inventory and stock management',
+    context: '/inventory',
+    status: 'deployed',
+    upstream: {
+      host: 'inventory-api.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '30s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-009',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'inherit',
+        config: {},
+      },
+    ],
+    deployments: ['dep-005'],
+    createdAt: '2024-11-01T14:30:00Z',
+    updatedAt: '2025-01-17T14:30:00Z',
+    createdBy: 'admin@example.com',
+  },
+  {
+    id: 'api-006',
+    name: 'analytics-api',
+    version: 'v1.8.3',
+    displayName: 'Analytics & Reporting API',
+    description: 'Business analytics and reporting service',
+    context: '/analytics',
+    status: 'deployed',
+    upstream: {
+      host: 'analytics-api.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '45s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-010',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'override',
+        config: {
+          requestsPerMinute: 200,
+          burstSize: 20,
+        },
+      },
+      {
+        id: 'pol-inst-011',
+        policyType: 'cors',
+        order: 2,
+        enabled: true,
+        inheritanceMode: 'inherit',
+        config: {},
+      },
+    ],
+    deployments: ['dep-006'],
+    createdAt: '2024-08-15T16:45:00Z',
+    updatedAt: '2025-01-20T16:45:00Z',
+    createdBy: 'admin@example.com',
+  },
+  {
+    id: 'api-007',
+    name: 'search-service',
+    version: 'v2.3.1',
+    displayName: 'Search Service API',
+    description: 'Full-text search and filtering service',
+    context: '/search',
+    status: 'deployed',
+    upstream: {
+      host: 'search-service.internal',
+      port: 9200,
+      scheme: 'http',
+      timeout: '10s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: false,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-012',
+        policyType: 'rate-limit',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'override',
+        config: {
+          requestsPerMinute: 2000,
+          burstSize: 200,
+        },
+      },
+    ],
+    deployments: ['dep-007'],
+    createdAt: '2024-07-20T08:20:00Z',
+    updatedAt: '2025-01-19T08:20:00Z',
+    createdBy: 'deploy-bot@example.com',
+  },
+  {
+    id: 'api-008',
+    name: 'recommendation-engine',
+    version: 'v1.0.5',
+    displayName: 'Recommendation Engine API',
+    description: 'ML-powered product recommendation service',
+    context: '/recommendations',
+    status: 'ready',
+    upstream: {
+      host: 'recommendation-engine.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '30s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'random',
+    },
+    policyChain: [],
+    deployments: ['dep-008'],
+    createdAt: '2025-01-10T12:10:00Z',
+    updatedAt: '2025-01-21T12:10:00Z',
+    createdBy: 'developer@example.com',
+  },
+  {
+    id: 'api-009',
+    name: 'reporting-api',
+    version: 'v2.5.0',
+    displayName: 'Reporting API',
+    description: 'Custom report generation and export service',
+    context: '/reports',
+    status: 'deployed',
+    upstream: {
+      host: 'reporting-api.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '120s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [
+      {
+        id: 'pol-inst-013',
+        policyType: 'logging',
+        order: 1,
+        enabled: true,
+        inheritanceMode: 'inherit',
+        config: {},
+      },
+    ],
+    deployments: ['dep-009'],
+    createdAt: '2024-10-16T13:40:00Z',
+    updatedAt: '2025-01-16T13:40:00Z',
+    createdBy: 'admin@example.com',
+  },
+  {
+    id: 'api-010',
+    name: 'webhook-handler',
+    version: 'v1.1.2',
+    displayName: 'Webhook Handler API',
+    description: 'External webhook ingestion and processing',
+    context: '/webhooks',
+    status: 'draft',
+    upstream: {
+      host: 'webhook-handler.internal',
+      port: 8080,
+      scheme: 'http',
+      timeout: '15s',
+    },
+    routing: {
+      matchType: 'prefix',
+      caseSensitive: true,
+      loadBalancing: 'round-robin',
+    },
+    policyChain: [],
+    deployments: [],
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
+    createdBy: 'developer@example.com',
+  },
+]
+
 // Deployment Stats
 export const mockDeploymentStats: DeploymentStats = {
   totalDeployments: 45,
@@ -859,5 +1342,15 @@ export const mockPolicyAPI = {
     Promise.resolve({ ...data, id: faker.string.uuid() } as MediationPolicy),
   update: (id: string, data: Partial<MediationPolicy>) =>
     Promise.resolve({ ...mockPolicies.find((p) => p.id === id)!, ...data }),
+  delete: (_id: string) => Promise.resolve({ success: true }),
+}
+
+export const mockAPIAPI = {
+  list: () => Promise.resolve(mockAPIs),
+  get: (id: string) => Promise.resolve(mockAPIs.find((a) => a.id === id) || null),
+  create: (data: Partial<API>) =>
+    Promise.resolve({ ...data, id: faker.string.uuid() } as API),
+  update: (id: string, data: Partial<API>) =>
+    Promise.resolve({ ...mockAPIs.find((a) => a.id === id)!, ...data }),
   delete: (_id: string) => Promise.resolve({ success: true }),
 }

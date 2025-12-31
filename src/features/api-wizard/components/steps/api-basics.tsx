@@ -41,7 +41,28 @@ export function ApiBasicsStep() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Lowercase letters, numbers, and hyphens only
+                  Lowercase letters, numbers, and hyphens only (used internally)
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='apiInfo.displayName'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Display Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder='My API'
+                    autoComplete='off'
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Human-readable name shown in the UI
                 </FormDescription>
                 <FormMessage />
               </FormItem>

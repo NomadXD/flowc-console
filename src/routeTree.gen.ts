@@ -35,6 +35,7 @@ import { Route as AuthenticatedEnvironmentsIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedDeploymentsIndexRouteImport } from './routes/_authenticated/deployments/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
+import { Route as AuthenticatedApisIndexRouteImport } from './routes/_authenticated/apis/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
@@ -45,6 +46,8 @@ import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_auth
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedGatewaysGatewayIdRouteRouteImport } from './routes/_authenticated/gateways/$gatewayId/route'
 import { Route as AuthenticatedDeploymentsNewIndexRouteImport } from './routes/_authenticated/deployments/new/index'
+import { Route as AuthenticatedApisNewIndexRouteImport } from './routes/_authenticated/apis/new/index'
+import { Route as AuthenticatedApisApiIdIndexRouteImport } from './routes/_authenticated/apis/$apiId/index'
 import { Route as AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport } from './routes/_authenticated/environments/$gatewayId/$port/$envName/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
@@ -181,6 +184,11 @@ const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
   path: '/apps/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedApisIndexRoute = AuthenticatedApisIndexRouteImport.update({
+  id: '/apis/',
+  path: '/apis/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ClerkAuthenticatedUserManagementRoute =
   ClerkAuthenticatedUserManagementRouteImport.update({
     id: '/user-management',
@@ -239,6 +247,18 @@ const AuthenticatedDeploymentsNewIndexRoute =
     path: '/deployments/new/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApisNewIndexRoute =
+  AuthenticatedApisNewIndexRouteImport.update({
+    id: '/apis/new/',
+    path: '/apis/new/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedApisApiIdIndexRoute =
+  AuthenticatedApisApiIdIndexRouteImport.update({
+    id: '/apis/$apiId/',
+    path: '/apis/$apiId/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute =
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport.update({
     id: '/environments/$gatewayId/$port/$envName',
@@ -269,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/apis': typeof AuthenticatedApisIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/deployments': typeof AuthenticatedDeploymentsIndexRoute
@@ -279,6 +300,8 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/apis/$apiId': typeof AuthenticatedApisApiIdIndexRoute
+  '/apis/new': typeof AuthenticatedApisNewIndexRoute
   '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
   '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
@@ -304,6 +327,7 @@ export interface FileRoutesByTo {
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/apis': typeof AuthenticatedApisIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/deployments': typeof AuthenticatedDeploymentsIndexRoute
@@ -314,6 +338,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/apis/$apiId': typeof AuthenticatedApisApiIdIndexRoute
+  '/apis/new': typeof AuthenticatedApisNewIndexRoute
   '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
   '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
@@ -344,6 +370,7 @@ export interface FileRoutesById {
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
+  '/_authenticated/apis/': typeof AuthenticatedApisIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/deployments/': typeof AuthenticatedDeploymentsIndexRoute
@@ -354,6 +381,8 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/apis/$apiId/': typeof AuthenticatedApisApiIdIndexRoute
+  '/_authenticated/apis/new/': typeof AuthenticatedApisNewIndexRoute
   '/_authenticated/deployments/new/': typeof AuthenticatedDeploymentsNewIndexRoute
   '/_authenticated/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
@@ -382,6 +411,7 @@ export interface FileRouteTypes {
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
+    | '/apis'
     | '/apps'
     | '/chats'
     | '/deployments'
@@ -392,6 +422,8 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/apis/$apiId'
+    | '/apis/new'
     | '/deployments/new'
     | '/environments/$gatewayId/$port/$envName'
   fileRoutesByTo: FileRoutesByTo
@@ -417,6 +449,7 @@ export interface FileRouteTypes {
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
+    | '/apis'
     | '/apps'
     | '/chats'
     | '/deployments'
@@ -427,6 +460,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/apis/$apiId'
+    | '/apis/new'
     | '/deployments/new'
     | '/environments/$gatewayId/$port/$envName'
   id:
@@ -456,6 +491,7 @@ export interface FileRouteTypes {
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
+    | '/_authenticated/apis/'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
     | '/_authenticated/deployments/'
@@ -466,6 +502,8 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/apis/$apiId/'
+    | '/_authenticated/apis/new/'
     | '/_authenticated/deployments/new/'
     | '/_authenticated/environments/$gatewayId/$port/$envName'
   fileRoutesById: FileRoutesById
@@ -669,6 +707,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/apis/': {
+      id: '/_authenticated/apis/'
+      path: '/apis'
+      fullPath: '/apis'
+      preLoaderRoute: typeof AuthenticatedApisIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/clerk/_authenticated/user-management': {
       id: '/clerk/_authenticated/user-management'
       path: '/user-management'
@@ -739,6 +784,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDeploymentsNewIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/apis/new/': {
+      id: '/_authenticated/apis/new/'
+      path: '/apis/new'
+      fullPath: '/apis/new'
+      preLoaderRoute: typeof AuthenticatedApisNewIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/apis/$apiId/': {
+      id: '/_authenticated/apis/$apiId/'
+      path: '/apis/$apiId'
+      fullPath: '/apis/$apiId'
+      preLoaderRoute: typeof AuthenticatedApisApiIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/environments/$gatewayId/$port/$envName': {
       id: '/_authenticated/environments/$gatewayId/$port/$envName'
       path: '/environments/$gatewayId/$port/$envName'
@@ -777,6 +836,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedGatewaysGatewayIdRouteRoute: typeof AuthenticatedGatewaysGatewayIdRouteRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedApisIndexRoute: typeof AuthenticatedApisIndexRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDeploymentsIndexRoute: typeof AuthenticatedDeploymentsIndexRoute
@@ -786,6 +846,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedListenersIndexRoute: typeof AuthenticatedListenersIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedApisApiIdIndexRoute: typeof AuthenticatedApisApiIdIndexRoute
+  AuthenticatedApisNewIndexRoute: typeof AuthenticatedApisNewIndexRoute
   AuthenticatedDeploymentsNewIndexRoute: typeof AuthenticatedDeploymentsNewIndexRoute
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
@@ -796,6 +858,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGatewaysGatewayIdRouteRoute:
     AuthenticatedGatewaysGatewayIdRouteRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedApisIndexRoute: AuthenticatedApisIndexRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDeploymentsIndexRoute: AuthenticatedDeploymentsIndexRoute,
@@ -805,6 +868,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedListenersIndexRoute: AuthenticatedListenersIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedApisApiIdIndexRoute: AuthenticatedApisApiIdIndexRoute,
+  AuthenticatedApisNewIndexRoute: AuthenticatedApisNewIndexRoute,
   AuthenticatedDeploymentsNewIndexRoute: AuthenticatedDeploymentsNewIndexRoute,
   AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute:
     AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute,
