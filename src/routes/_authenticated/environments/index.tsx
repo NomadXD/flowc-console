@@ -7,11 +7,7 @@ const environmentsSearchSchema = z.object({
   pageSize: z.number().optional().catch(10),
   // Facet filters
   gateway: z.array(z.string()).optional().catch([]),
-  port: z.array(z.string()).optional().catch([]),
-  tls: z
-    .array(z.union([z.literal('true'), z.literal('false')]))
-    .optional()
-    .catch([]),
+  listener: z.array(z.string()).optional().catch([]),
   // Per-column text filters
   name: z.string().optional().catch(''),
   hostname: z.string().optional().catch(''),

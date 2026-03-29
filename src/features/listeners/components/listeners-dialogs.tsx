@@ -1,9 +1,9 @@
 import { ListenerActionDialog } from './listener-action-dialog'
 import { ListenerDeleteDialog } from './listener-delete-dialog'
-import { useListeners } from './listeners-provider'
+import { useListenersContext } from './listeners-provider'
 
 export function ListenersDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useListeners()
+  const { open, setOpen, currentRow, setCurrentRow } = useListenersContext()
   return (
     <>
       <ListenerActionDialog
@@ -15,7 +15,7 @@ export function ListenersDialogs() {
       {currentRow && (
         <>
           <ListenerActionDialog
-            key={`listener-edit-${currentRow.gatewayId}-${currentRow.port}`}
+            key={`listener-edit-${currentRow.metadata.name}`}
             open={open === 'edit'}
             onOpenChange={() => {
               setOpen('edit')
@@ -27,7 +27,7 @@ export function ListenersDialogs() {
           />
 
           <ListenerDeleteDialog
-            key={`listener-delete-${currentRow.gatewayId}-${currentRow.port}`}
+            key={`listener-delete-${currentRow.metadata.name}`}
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')

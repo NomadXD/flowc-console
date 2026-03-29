@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import { Edit, Rocket } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,7 @@ import {
 import { DeployAPIDialog } from './components/deploy-api-dialog'
 
 interface APIDetailProps {
-  api: API
+  api: APIResponse
 }
 
 export function APIDetail({ api }: APIDetailProps) {
@@ -30,13 +30,13 @@ export function APIDetail({ api }: APIDetailProps) {
   const breadcrumbItems = [
     { label: 'APIs', href: '/apis' },
     {
-      label: api.displayName,
-      href: `/apis/${api.id}`,
+      label: api.spec.displayName || api.metadata.name,
+      href: `/apis/${api.metadata.name}`,
     },
   ]
 
-  const getStatusColor = (status: API['status']) => {
-    switch (status) {
+  const getStatusColor = (phase: string) => {
+    switch (phase) {
       case 'draft':
         return 'secondary'
       case 'ready':
@@ -49,6 +49,8 @@ export function APIDetail({ api }: APIDetailProps) {
         return 'default'
     }
   }
+
+  const phase = api.status?.phase || 'unknown'
 
   return (
     <>
@@ -69,23 +71,21 @@ export function APIDetail({ api }: APIDetailProps) {
           <div>
             <div className='flex items-center gap-3'>
               <h1 className='text-3xl font-bold tracking-tight'>
-                {api.displayName}
+                {api.spec.displayName || api.metadata.name}
               </h1>
-              <Badge variant={getStatusColor(api.status)}>
-                {api.status.charAt(0).toUpperCase() + api.status.slice(1)}
+              <Badge variant={getStatusColor(phase)}>
+                {phase.charAt(0).toUpperCase() + phase.slice(1)}
               </Badge>
             </div>
             <p className='text-muted-foreground mt-1'>
-              {api.description || 'No description provided'}
+              {api.spec.description || 'No description provided'}
             </p>
             <div className='flex items-center gap-4 mt-2 text-sm text-muted-foreground'>
-              <span>Version: {api.version}</span>
+              <span>Version: {api.spec.version}</span>
               <span>•</span>
-              <span>Context: {api.context}</span>
+              <span>Context: {api.spec.context}</span>
               <span>•</span>
-              <span>{api.deployments.length} Deployment{api.deployments.length !== 1 ? 's' : ''}</span>
-              <span>•</span>
-              <span>{api.policyChain.length} Polic{api.policyChain.length !== 1 ? 'ies' : 'y'}</span>
+              <span>{(api.spec.policyChain || []).length} Polic{(api.spec.policyChain || []).length !== 1 ? 'ies' : 'y'}</span>
             </div>
           </div>
           <div className='flex gap-2'>
@@ -104,10 +104,10 @@ export function APIDetail({ api }: APIDetailProps) {
           <TabsList>
             <TabsTrigger value='overview'>Overview</TabsTrigger>
             <TabsTrigger value='policies'>
-              Policies ({api.policyChain.length})
+              Policies ({(api.spec.policyChain || []).length})
             </TabsTrigger>
             <TabsTrigger value='deployments'>
-              Deployments ({api.deployments.length})
+              Deployments
             </TabsTrigger>
             <TabsTrigger value='spec'>OpenAPI Spec</TabsTrigger>
             <TabsTrigger value='settings'>Settings</TabsTrigger>

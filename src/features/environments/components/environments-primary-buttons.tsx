@@ -1,9 +1,9 @@
 import { PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useEnvironments } from './environments-provider'
+import { useEnvironmentsContext } from './environments-provider'
 
 export function EnvironmentsPrimaryButtons() {
-  const { setOpen } = useEnvironments()
+  const { setOpen } = useEnvironmentsContext()
   return (
     <div className='flex gap-2'>
       <Button className='space-x-1' onClick={() => setOpen('create')}>

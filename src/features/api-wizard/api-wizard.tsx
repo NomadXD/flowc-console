@@ -5,8 +5,6 @@ import { OpenApiUploadStep } from './components/steps/openapi-upload'
 import { ApiBasicsStep } from './components/steps/api-basics'
 import { ApiInfoStep } from './components/steps/api-info'
 import { UpstreamConfigStep } from './components/steps/upstream-config'
-import { StrategyOptionsStep } from './components/steps/strategy-options'
-import { PoliciesConfigStep } from './components/steps/policies-config'
 import { ReviewSaveStep } from './components/steps/review-save'
 
 function WizardSteps() {
@@ -23,10 +21,6 @@ function WizardSteps() {
       return <ApiInfoStep />
     case 'upstream-config':
       return <UpstreamConfigStep />
-    case 'strategy-options':
-      return <StrategyOptionsStep />
-    case 'policies-config':
-      return <PoliciesConfigStep />
     case 'review-save':
       return <ReviewSaveStep />
     default:

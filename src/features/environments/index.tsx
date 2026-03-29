@@ -1,5 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
-import { mockEnvironments } from '@/data/mock/flowc-data'
+import { Loader2 } from 'lucide-react'
+import { useEnvironments } from '@/hooks/use-environments'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -16,6 +17,9 @@ const route = getRouteApi('/_authenticated/environments/')
 export function Environments() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
+
+  const { data, isLoading, error } = useEnvironments()
+  const environments = data?.items || []
 
   return (
     <EnvironmentsProvider>
@@ -39,11 +43,24 @@ export function Environments() {
           </div>
           <EnvironmentsPrimaryButtons />
         </div>
-        <EnvironmentsTable
-          data={mockEnvironments}
-          search={search}
-          navigate={navigate}
-        />
+
+        {error && (
+          <div className='rounded-md bg-destructive/15 p-4 text-sm text-destructive'>
+            Error loading environments: {error.message}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className='flex items-center justify-center py-12'>
+            <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+          </div>
+        ) : (
+          <EnvironmentsTable
+            data={environments}
+            search={search}
+            navigate={navigate}
+          />
+        )}
       </Main>
 
       <EnvironmentsDialogs />

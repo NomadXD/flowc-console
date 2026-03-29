@@ -1,5 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
-import { mockGateways } from '@/data/mock/flowc-data'
+import { Loader2 } from 'lucide-react'
+import { useGateways } from '@/hooks/use-gateways'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -16,6 +17,9 @@ const route = getRouteApi('/_authenticated/gateways/')
 export function Gateways() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
+
+  const { data, isLoading, error } = useGateways()
+  const gateways = data?.items || []
 
   return (
     <GatewaysProvider>
@@ -38,11 +42,24 @@ export function Gateways() {
           </div>
           <GatewaysPrimaryButtons />
         </div>
-        <GatewaysTable
-          data={mockGateways}
-          search={search}
-          navigate={navigate}
-        />
+
+        {error && (
+          <div className='rounded-md bg-destructive/15 p-4 text-sm text-destructive'>
+            Error loading gateways: {error.message}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className='flex items-center justify-center py-12'>
+            <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+          </div>
+        ) : (
+          <GatewaysTable
+            data={gateways}
+            search={search}
+            navigate={navigate}
+          />
+        )}
       </Main>
 
       <GatewaysDialogs />

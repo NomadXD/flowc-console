@@ -62,8 +62,6 @@ export const STEP_LABELS = {
   'api-basics': 'API Basics',
   'api-info': 'API Info',
   'upstream-config': 'Upstream',
-  'strategy-options': 'Strategy',
-  'policies-config': 'Policies',
   'review-save': 'Review',
 }
 
@@ -76,8 +74,6 @@ export type WizardStep =
   | 'api-basics'
   | 'api-info'
   | 'upstream-config'
-  | 'strategy-options'
-  | 'policies-config'
   | 'review-save'
 
 // OpenAPI flow steps
@@ -86,8 +82,6 @@ export const OPENAPI_FLOW_STEPS: WizardStep[] = [
   'openapi-upload',
   'api-info',
   'upstream-config',
-  'strategy-options',
-  'policies-config',
   'review-save',
 ]
 
@@ -96,8 +90,6 @@ export const SCRATCH_FLOW_STEPS: WizardStep[] = [
   'source-selection',
   'api-basics',
   'upstream-config',
-  'strategy-options',
-  'policies-config',
   'review-save',
 ]
 

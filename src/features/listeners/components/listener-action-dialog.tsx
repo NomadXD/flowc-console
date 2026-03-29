@@ -2,12 +2,10 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { type Listener, mockGateways } from '@/data/mock/flowc-data'
-import {
-  listenerFormSchema,
-  type ListenerCreate,
-} from '@/data/schemas/flowc-schemas'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { z } from 'zod'
+import type { ListenerResponse } from '@/lib/api/openapi/types'
+import { useGateways } from '@/hooks/use-gateways'
+import { usePutListener } from '@/hooks/use-listeners'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -29,12 +27,22 @@ import {
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { protocolOptions } from '../data/constants'
 
-type ListenerForm = ListenerCreate
+const listenerFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, and hyphens only'),
+  gatewayRef: z.string().min(1, 'Gateway is required'),
+  port: z.number().min(1).max(65535),
+  address: z.string(),
+  tlsEnabled: z.boolean(),
+})
+
+type ListenerForm = z.infer<typeof listenerFormSchema>
 
 type ListenerActionDialogProps = {
-  currentRow?: Listener
+  currentRow?: ListenerResponse
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -45,33 +53,56 @@ export function ListenerActionDialog({
   onOpenChange,
 }: ListenerActionDialogProps) {
   const isEdit = !!currentRow
+  const { mutate: putListener, isPending } = usePutListener()
+  const { data: gatewaysData } = useGateways()
+
   const form = useForm<ListenerForm>({
     resolver: zodResolver(listenerFormSchema),
     defaultValues: isEdit
       ? {
-          port: currentRow.port,
-          protocol: currentRow.protocol,
-          gatewayId: currentRow.gatewayId,
-          tlsEnabled: currentRow.tlsEnabled,
+          name: currentRow.metadata.name,
+          gatewayRef: currentRow.spec.gatewayRef,
+          port: currentRow.spec.port,
+          address: currentRow.spec.address || '',
+          tlsEnabled: !!currentRow.spec.tls,
         }
       : {
+          name: '',
+          gatewayRef: '',
           port: 443,
-          protocol: 'HTTPS',
-          gatewayId: '',
-          tlsEnabled: true,
+          address: '',
+          tlsEnabled: false,
         },
   })
 
-  // Build gateway options
-  const gatewayOptions = mockGateways.map((gateway) => ({
-    label: gateway.name,
-    value: gateway.id,
+  const gatewayOptions = (gatewaysData?.items || []).map((gateway) => ({
+    label: gateway.metadata.name,
+    value: gateway.metadata.name,
   }))
 
   const onSubmit = (values: ListenerForm) => {
-    form.reset()
-    showSubmittedData(values)
-    onOpenChange(false)
+    putListener(
+      {
+        name: values.name,
+        body: {
+          spec: {
+            gatewayRef: values.gatewayRef,
+            port: values.port,
+            address: values.address || undefined,
+            tls: values.tlsEnabled
+              ? { certPath: '', keyPath: '' }
+              : undefined,
+          },
+        },
+        ifMatch: isEdit ? currentRow.metadata.revision : undefined,
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+          onOpenChange(false)
+        },
+      }
+    )
   }
 
   return (
@@ -103,7 +134,31 @@ export function ListenerActionDialog({
             >
               <FormField
                 control={form.control}
-                name='gatewayId'
+                name='name'
+                render={({ field }) => (
+                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
+                    <FormLabel className='col-span-2 text-end'>Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='listener-https'
+                        className='col-span-4'
+                        autoComplete='off'
+                        disabled={isEdit}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className='col-span-4 col-start-3' />
+                    <FormDescription className='col-span-4 col-start-3 text-xs'>
+                      {isEdit
+                        ? 'Name cannot be changed after creation'
+                        : 'Lowercase letters, numbers, and hyphens only'}
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='gatewayRef'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
@@ -139,7 +194,6 @@ export function ListenerActionDialog({
                         placeholder='443'
                         className='col-span-4'
                         autoComplete='off'
-                        disabled={isEdit}
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) => {
@@ -150,30 +204,31 @@ export function ListenerActionDialog({
                     </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                     <FormDescription className='col-span-4 col-start-3 text-xs'>
-                      {isEdit
-                        ? 'Port cannot be changed after creation'
-                        : 'Valid port range: 1-65535'}
+                      Valid port range: 1-65535
                     </FormDescription>
                   </FormItem>
                 )}
               />
               <FormField
                 control={form.control}
-                name='protocol'
+                name='address'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Protocol
+                      Address
                     </FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value}
-                      onValueChange={field.onChange}
-                      placeholder='Select protocol'
-                      items={protocolOptions}
-                      className='col-span-4'
-                      isControlled={true}
-                    />
+                    <FormControl>
+                      <Input
+                        placeholder='0.0.0.0'
+                        className='col-span-4'
+                        autoComplete='off'
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
+                    <FormDescription className='col-span-4 col-start-3 text-xs'>
+                      Bind address (defaults to 0.0.0.0)
+                    </FormDescription>
                   </FormItem>
                 )}
               />
@@ -214,8 +269,12 @@ export function ListenerActionDialog({
           >
             Cancel
           </Button>
-          <Button type='submit' form='listener-form'>
-            {isEdit ? 'Save Changes' : 'Create Listener'}
+          <Button type='submit' form='listener-form' disabled={isPending}>
+            {isPending
+              ? 'Saving...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Listener'}
           </Button>
         </DialogFooter>
       </DialogContent>

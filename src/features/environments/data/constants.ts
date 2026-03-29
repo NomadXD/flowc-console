@@ -1,4 +1,4 @@
-import type { Environment } from '@/data/mock/flowc-data'
+import type { EnvironmentResponse } from '@/lib/api/openapi/types'
 
 // Common environment names
 export const environmentNames = [
@@ -54,7 +54,7 @@ export function getEnvironmentStyle(name: string) {
   )
 }
 
-// Check if environment has TLS
-export function hasTLS(env: Environment): boolean {
-  return !!env.tlsConfig
+// Check if environment has HTTP filters
+export function hasHttpFilters(env: EnvironmentResponse): boolean {
+  return (env.spec.httpFilters?.length ?? 0) > 0
 }

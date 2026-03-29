@@ -1,4 +1,4 @@
-import type { API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import {
   Card,
   CardContent,
@@ -12,16 +12,17 @@ import {
   Route,
   Network,
   Clock,
-  User,
   Calendar,
   FileCode,
 } from 'lucide-react'
 
 interface APIOverviewProps {
-  api: API
+  api: APIResponse
 }
 
 export function APIOverview({ api }: APIOverviewProps) {
+  const phase = api.status?.phase || 'unknown'
+
   return (
     <div className='grid gap-4 md:grid-cols-2'>
       {/* Basic Information */}
@@ -36,36 +37,38 @@ export function APIOverview({ api }: APIOverviewProps) {
         <CardContent className='space-y-4'>
           <div>
             <p className='text-sm font-medium text-muted-foreground'>Name</p>
-            <p className='text-base'>{api.name}</p>
+            <p className='text-base'>{api.metadata.name}</p>
+          </div>
+          {api.spec.displayName && (
+            <div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                Display Name
+              </p>
+              <p className='text-base'>{api.spec.displayName}</p>
+            </div>
+          )}
+          <div>
+            <p className='text-sm font-medium text-muted-foreground'>Version</p>
+            <p className='text-base'>{api.spec.version}</p>
           </div>
           <div>
             <p className='text-sm font-medium text-muted-foreground'>
-              Display Name
+              Context Path
             </p>
-            <p className='text-base'>{api.displayName}</p>
-          </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>Version</p>
-            <p className='text-base'>{api.version}</p>
-          </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>Context Path</p>
-            <p className='text-base font-mono'>{api.context}</p>
+            <p className='text-base font-mono'>{api.spec.context}</p>
           </div>
           <div>
             <p className='text-sm font-medium text-muted-foreground'>Status</p>
             <Badge
               variant={
-                api.status === 'deployed'
+                phase === 'deployed' || phase === 'ready'
                   ? 'default'
-                  : api.status === 'ready'
-                    ? 'default'
-                    : api.status === 'deprecated'
-                      ? 'outline'
-                      : 'secondary'
+                  : phase === 'deprecated'
+                    ? 'outline'
+                    : 'secondary'
               }
             >
-              {api.status.charAt(0).toUpperCase() + api.status.slice(1)}
+              {phase.charAt(0).toUpperCase() + phase.slice(1)}
             </Badge>
           </div>
         </CardContent>
@@ -83,73 +86,92 @@ export function APIOverview({ api }: APIOverviewProps) {
         <CardContent className='space-y-4'>
           <div>
             <p className='text-sm font-medium text-muted-foreground'>Host</p>
-            <p className='text-base font-mono'>{api.upstream.host}</p>
+            <p className='text-base font-mono'>{api.spec.upstream.host}</p>
           </div>
           <div>
             <p className='text-sm font-medium text-muted-foreground'>Port</p>
-            <p className='text-base'>{api.upstream.port}</p>
+            <p className='text-base'>{api.spec.upstream.port}</p>
           </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>Scheme</p>
-            <Badge variant='outline'>
-              {api.upstream.scheme.toUpperCase()}
-            </Badge>
-          </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>Timeout</p>
-            <p className='text-base'>{api.upstream.timeout}</p>
-          </div>
+          {api.spec.upstream.scheme && (
+            <div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                Scheme
+              </p>
+              <Badge variant='outline'>
+                {api.spec.upstream.scheme.toUpperCase()}
+              </Badge>
+            </div>
+          )}
+          {api.spec.upstream.timeout && (
+            <div>
+              <p className='text-sm font-medium text-muted-foreground'>
+                Timeout
+              </p>
+              <p className='text-base'>{api.spec.upstream.timeout}</p>
+            </div>
+          )}
           <div>
             <p className='text-sm font-medium text-muted-foreground'>
               Full URL
             </p>
             <p className='text-sm font-mono text-muted-foreground break-all'>
-              {api.upstream.scheme}://{api.upstream.host}:{api.upstream.port}
+              {api.spec.upstream.scheme || 'http'}://{api.spec.upstream.host}:
+              {api.spec.upstream.port}
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Routing Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className='flex items-center gap-2'>
-            <Route className='h-5 w-5' />
-            Routing Configuration
-          </CardTitle>
-          <CardDescription>Request routing strategy</CardDescription>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>
-              Match Type
-            </p>
-            <Badge variant='outline'>
-              {api.routing.matchType.charAt(0).toUpperCase() +
-                api.routing.matchType.slice(1)}
-            </Badge>
-          </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>
-              Case Sensitive
-            </p>
-            <p className='text-base'>
-              {api.routing.caseSensitive ? 'Yes' : 'No'}
-            </p>
-          </div>
-          <div>
-            <p className='text-sm font-medium text-muted-foreground'>
-              Load Balancing
-            </p>
-            <Badge variant='outline'>
-              {api.routing.loadBalancing
-                .split('-')
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ')}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+      {api.spec.routing && (
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <Route className='h-5 w-5' />
+              Routing Configuration
+            </CardTitle>
+            <CardDescription>Request routing strategy</CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            {api.spec.routing.matchType && (
+              <div>
+                <p className='text-sm font-medium text-muted-foreground'>
+                  Match Type
+                </p>
+                <Badge variant='outline'>
+                  {api.spec.routing.matchType.charAt(0).toUpperCase() +
+                    api.spec.routing.matchType.slice(1)}
+                </Badge>
+              </div>
+            )}
+            {api.spec.routing.caseSensitive !== undefined && (
+              <div>
+                <p className='text-sm font-medium text-muted-foreground'>
+                  Case Sensitive
+                </p>
+                <p className='text-base'>
+                  {api.spec.routing.caseSensitive ? 'Yes' : 'No'}
+                </p>
+              </div>
+            )}
+            {api.spec.routing.loadBalancing && (
+              <div>
+                <p className='text-sm font-medium text-muted-foreground'>
+                  Load Balancing
+                </p>
+                <Badge variant='outline'>
+                  {api.spec.routing.loadBalancing
+                    .split('-')
+                    .map(
+                      (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                    )
+                    .join(' ')}
+                </Badge>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Metadata */}
       <Card>
@@ -168,7 +190,7 @@ export function APIOverview({ api }: APIOverviewProps) {
                 Created At
               </p>
               <p className='text-sm'>
-                {new Date(api.createdAt).toLocaleString()}
+                {new Date(api.metadata.createdAt).toLocaleString()}
               </p>
             </div>
           </div>
@@ -179,63 +201,74 @@ export function APIOverview({ api }: APIOverviewProps) {
                 Updated At
               </p>
               <p className='text-sm'>
-                {new Date(api.updatedAt).toLocaleString()}
+                {new Date(api.metadata.updatedAt).toLocaleString()}
               </p>
             </div>
           </div>
-          <div className='flex items-start gap-2'>
-            <User className='h-4 w-4 mt-0.5 text-muted-foreground' />
-            <div className='flex-1'>
+          {api.metadata.managedBy && (
+            <div>
               <p className='text-sm font-medium text-muted-foreground'>
-                Created By
+                Managed By
               </p>
-              <p className='text-sm'>{api.createdBy}</p>
+              <p className='text-sm'>{api.metadata.managedBy}</p>
             </div>
+          )}
+          <div>
+            <p className='text-sm font-medium text-muted-foreground'>
+              Revision
+            </p>
+            <p className='text-sm font-mono'>{api.metadata.revision}</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* OpenAPI Spec Info (if available) */}
-      {api.spec && api.spec.parsedInfo && (
+      {/* Parsed OpenAPI Spec Info (if available) */}
+      {api.status?.parsedInfo && (
         <Card className='md:col-span-2'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <FileCode className='h-5 w-5' />
               OpenAPI Specification
             </CardTitle>
-            <CardDescription>
-              Imported from {api.spec.fileName}
-            </CardDescription>
+            <CardDescription>Parsed from uploaded spec</CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='grid gap-4 md:grid-cols-3'>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Title
-                </p>
-                <p className='text-base'>{api.spec.parsedInfo.title}</p>
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Version
-                </p>
-                <p className='text-base'>{api.spec.parsedInfo.version}</p>
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Paths
-                </p>
-                <p className='text-base'>{api.spec.parsedInfo.paths.length}</p>
-              </div>
+              {api.status.parsedInfo.title && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Title
+                  </p>
+                  <p className='text-base'>{api.status.parsedInfo.title}</p>
+                </div>
+              )}
+              {api.status.parsedInfo.version && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Version
+                  </p>
+                  <p className='text-base'>{api.status.parsedInfo.version}</p>
+                </div>
+              )}
+              {api.status.parsedInfo.paths && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Paths
+                  </p>
+                  <p className='text-base'>
+                    {api.status.parsedInfo.paths.length}
+                  </p>
+                </div>
+              )}
             </div>
-            {api.spec.parsedInfo.servers &&
-              api.spec.parsedInfo.servers.length > 0 && (
+            {api.status.parsedInfo.servers &&
+              api.status.parsedInfo.servers.length > 0 && (
                 <div>
                   <p className='text-sm font-medium text-muted-foreground mb-2'>
                     Servers
                   </p>
                   <div className='flex flex-wrap gap-2'>
-                    {api.spec.parsedInfo.servers.map((server, idx) => (
+                    {api.status.parsedInfo.servers.map((server, idx) => (
                       <Badge key={idx} variant='secondary'>
                         {server}
                       </Badge>

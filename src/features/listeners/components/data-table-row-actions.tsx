@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { type Row } from '@tanstack/react-table'
-import { type Listener } from '@/data/mock/flowc-data'
+import type { ListenerResponse } from '@/lib/api/openapi/types'
 import { Edit, Trash2, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,14 +11,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useListeners } from './listeners-provider'
+import { useListenersContext } from './listeners-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Listener>
+  row: Row<ListenerResponse>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useListeners()
+  const { setOpen, setCurrentRow } = useListenersContext()
 
   return (
     <DropdownMenu modal={false}>

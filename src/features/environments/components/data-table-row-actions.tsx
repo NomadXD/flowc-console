@@ -1,8 +1,7 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { useNavigate } from '@tanstack/react-router'
 import { type Row } from '@tanstack/react-table'
-import { type Environment } from '@/data/mock/flowc-data'
-import { Edit, Trash2, Package, Shield, Eye } from 'lucide-react'
+import type { EnvironmentResponse } from '@/lib/api/openapi/types'
+import { Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,16 +11,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useEnvironments } from './environments-provider'
+import { useEnvironmentsContext } from './environments-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Environment>
+  row: Row<EnvironmentResponse>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useEnvironments()
-  const navigate = useNavigate()
-  const env = row.original
+  const { setOpen, setCurrentRow } = useEnvironmentsContext()
 
   return (
     <DropdownMenu modal={false}>
@@ -37,39 +34,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       <DropdownMenuContent align='end' className='w-[200px]'>
         <DropdownMenuItem
           onClick={() => {
-            navigate({
-              to: '/environments/$gatewayId/$port/$envName',
-              params: {
-                gatewayId: env.gatewayId,
-                port: env.port.toString(),
-                envName: env.name,
-              },
-            })
+            // TODO: Navigate to environment detail
           }}
         >
           View Details
           <DropdownMenuShortcut>
             <Eye size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            // TODO: Navigate to APIs filtered by this environment
-          }}
-        >
-          View APIs
-          <DropdownMenuShortcut>
-            <Package size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            // TODO: Navigate to policies management
-          }}
-        >
-          Manage Policies
-          <DropdownMenuShortcut>
-            <Shield size={16} />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

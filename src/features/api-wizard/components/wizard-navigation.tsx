@@ -20,6 +20,9 @@ export function WizardNavigation({
   isLastStep,
   nextLabel,
 }: WizardNavigationProps) {
+  // On the last step, the button should always be enabled (not disabled by canGoNext)
+  const isNextDisabled = isLastStep ? isLoading : !canGoNext || isLoading
+
   return (
     <div className='flex justify-between pt-6 border-t'>
       <Button
@@ -29,7 +32,7 @@ export function WizardNavigation({
       >
         Back
       </Button>
-      <Button onClick={onNext} disabled={!canGoNext || isLoading}>
+      <Button onClick={onNext} disabled={isNextDisabled}>
         {isLoading && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
         {nextLabel ?? (isLastStep ? 'Create API' : 'Continue')}
       </Button>

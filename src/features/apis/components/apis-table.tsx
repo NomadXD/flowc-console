@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { type API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
@@ -28,7 +28,7 @@ import { apisColumns as columns } from './apis-columns'
 import { APIDeleteDialog } from './api-delete-dialog'
 
 type DataTableProps = {
-  data: API[]
+  data: APIResponse[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
@@ -41,7 +41,7 @@ export function APIsTable({ data, search, navigate }: DataTableProps) {
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [apiToDelete, setApiToDelete] = useState<API | null>(null)
+  const [apiToDelete, setApiToDelete] = useState<APIResponse | null>(null)
 
   // Synced with URL states
   const {

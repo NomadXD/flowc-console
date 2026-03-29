@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { type Gateway } from '@/data/mock/flowc-data'
+import type { GatewayResponse } from '@/lib/api/openapi/types'
 import { AlertTriangle } from 'lucide-react'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { useDeleteGateway } from '@/hooks/use-gateways'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 type GatewayDeleteDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: Gateway
+  currentRow: GatewayResponse
 }
 
 export function GatewayDeleteDialog({
@@ -23,20 +23,30 @@ export function GatewayDeleteDialog({
 }: GatewayDeleteDialogProps) {
   const [value, setValue] = useState('')
   const [force, setForce] = useState(false)
+  const { mutate: deleteGateway, isPending } = useDeleteGateway()
+
+  const gatewayName = currentRow.metadata.name
 
   const handleDelete = () => {
-    if (!force && value.trim() !== currentRow.name) return
+    if (!force && value.trim() !== gatewayName) return
 
-    onOpenChange(false)
-    setValue('')
-    setForce(false)
-    showSubmittedData(
-      { ...currentRow, forceDelete: force },
-      'The following gateway has been deleted:'
+    deleteGateway(
+      {
+        name: gatewayName,
+        ifMatch: currentRow.metadata.revision,
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false)
+          setValue('')
+          setForce(false)
+        },
+      }
     )
   }
 
-  const isDeleteEnabled = force || value.trim() === currentRow.name
+  const isDeleteEnabled =
+    !isPending && (force || value.trim() === gatewayName)
 
   return (
     <ConfirmDialog
@@ -63,14 +73,10 @@ export function GatewayDeleteDialog({
         <div className='space-y-4'>
           <p className='mb-2'>
             Are you sure you want to delete gateway{' '}
-            <span className='font-bold'>{currentRow.name}</span>?
+            <span className='font-bold'>{gatewayName}</span>?
             <br />
-            This action will permanently remove the gateway with{' '}
-            <span className='font-bold'>{currentRow.listenerCount}</span>{' '}
-            listener(s) and{' '}
-            <span className='font-bold'>{currentRow.apiCount}</span> deployed
-            API(s) from <span className='font-bold'>{currentRow.region}</span>.
-            This cannot be undone.
+            This action will permanently remove the gateway. This cannot be
+            undone.
           </p>
 
           <div className='flex items-center space-x-2'>
@@ -101,14 +107,12 @@ export function GatewayDeleteDialog({
           <Alert variant='destructive'>
             <AlertTitle>Warning!</AlertTitle>
             <AlertDescription>
-              {currentRow.listenerCount > 0 || currentRow.apiCount > 0
-                ? 'This gateway has active listeners and deployed APIs. Deleting it will remove all associated configurations and may cause service disruptions.'
-                : 'Please be careful, this operation cannot be rolled back.'}
+              Please be careful, this operation cannot be rolled back.
             </AlertDescription>
           </Alert>
         </div>
       }
-      confirmText='Delete Gateway'
+      confirmText={isPending ? 'Deleting...' : 'Delete Gateway'}
       destructive
     />
   )

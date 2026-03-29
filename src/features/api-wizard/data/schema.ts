@@ -153,11 +153,11 @@ export const apiWizardFormSchema = z.object({
   // Upstream configuration
   upstream: upstreamConfigSchema,
 
-  // Strategy options
-  strategy: strategyOptionsSchema,
+  // Strategy options (optional - can be configured later)
+  strategy: strategyOptionsSchema.optional(),
 
-  // Policies configuration
-  policies: policiesConfigSchema,
+  // Policies configuration (optional - can be configured later)
+  policies: policiesConfigSchema.optional(),
 })
 
 // ============================================================================
@@ -184,14 +184,6 @@ export const step2Schema = z.object({
 
 export const step3Schema = z.object({
   upstream: upstreamConfigSchema,
-})
-
-export const step4Schema = z.object({
-  strategy: strategyOptionsSchema,
-})
-
-export const step5Schema = z.object({
-  policies: policiesConfigSchema,
 })
 
 // ============================================================================

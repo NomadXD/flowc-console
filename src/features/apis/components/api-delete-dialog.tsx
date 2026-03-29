@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { type API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
+import { useDeleteApi } from '@/hooks/use-apis'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,12 +10,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { toast } from 'sonner'
 
 interface APIDeleteDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  api: API | null
+  api: APIResponse | null
   onDeleteSuccess?: () => void
 }
 
@@ -25,29 +24,26 @@ export function APIDeleteDialog({
   api,
   onDeleteSuccess,
 }: APIDeleteDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const { mutate: deleteApi, isPending: isDeleting } = useDeleteApi()
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!api) return
 
-    setIsDeleting(true)
-    try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      toast.success(`API "${api.displayName}" deleted successfully`)
-      onOpenChange(false)
-      onDeleteSuccess?.()
-    } catch (error) {
-      toast.error('Failed to delete API')
-    } finally {
-      setIsDeleting(false)
-    }
+    deleteApi(
+      {
+        name: api.metadata.name,
+        ifMatch: api.metadata.revision,
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false)
+          onDeleteSuccess?.()
+        },
+      }
+    )
   }
 
   if (!api) return null
-
-  const hasDeployments = api.deployments.length > 0
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -55,30 +51,27 @@ export function APIDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete API</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{api.displayName}</strong>?
+            Are you sure you want to delete{' '}
+            <strong>{api.spec.displayName || api.metadata.name}</strong>?
           </AlertDialogDescription>
         </AlertDialogHeader>
-
-        {hasDeployments && (
-          <div className='rounded-md bg-destructive/10 p-3 text-sm text-destructive'>
-            <strong>Warning:</strong> This API has {api.deployments.length}{' '}
-            active deployment{api.deployments.length > 1 ? 's' : ''}. Deleting
-            this API will remove all deployments.
-          </div>
-        )}
 
         <div className='space-y-2 text-sm'>
           <div>
             <span className='text-muted-foreground'>Name:</span>{' '}
-            <code className='rounded bg-muted px-1.5 py-0.5'>{api.name}</code>
+            <code className='rounded bg-muted px-1.5 py-0.5'>
+              {api.metadata.name}
+            </code>
           </div>
           <div>
             <span className='text-muted-foreground'>Version:</span>{' '}
-            <span className='font-mono'>{api.version}</span>
+            <span className='font-mono'>{api.spec.version}</span>
           </div>
           <div>
             <span className='text-muted-foreground'>Context:</span>{' '}
-            <code className='rounded bg-muted px-1.5 py-0.5'>{api.context}</code>
+            <code className='rounded bg-muted px-1.5 py-0.5'>
+              {api.spec.context}
+            </code>
           </div>
         </div>
 

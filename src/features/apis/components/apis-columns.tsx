@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 import { type ColumnDef } from '@tanstack/react-table'
-import { type API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -9,7 +9,7 @@ import { LongText } from '@/components/long-text'
 import { API_STATUS_STYLES } from '../data/constants'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const apisColumns: ColumnDef<API>[] = [
+export const apisColumns: ColumnDef<APIResponse>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -38,17 +38,18 @@ export const apisColumns: ColumnDef<API>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'displayName',
+    id: 'displayName',
+    accessorFn: (row) => row.spec.displayName,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='API Name' />
     ),
     cell: ({ row }) => (
       <div className='flex flex-col gap-0.5'>
         <LongText className='max-w-48 font-medium'>
-          {row.getValue('displayName')}
+          {row.original.spec.displayName || row.original.metadata.name}
         </LongText>
         <span className='text-xs text-muted-foreground'>
-          {row.original.name}
+          {row.original.metadata.name}
         </span>
       </div>
     ),
@@ -61,65 +62,56 @@ export const apisColumns: ColumnDef<API>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'version',
+    id: 'version',
+    accessorFn: (row) => row.spec.version,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Version' />
     ),
     cell: ({ row }) => (
       <span className='font-mono text-xs text-muted-foreground'>
-        {row.getValue('version')}
+        {row.original.spec.version}
       </span>
     ),
   },
   {
-    accessorKey: 'status',
+    id: 'status',
+    accessorFn: (row) => row.status?.phase,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const status = row.getValue('status') as API['status']
-      const style = API_STATUS_STYLES[status]
+      const phase = row.original.status?.phase || 'unknown'
+      const style = API_STATUS_STYLES[phase] || { variant: 'outline' as const }
 
       return (
         <Badge variant={style.variant} className={style.className}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {phase.charAt(0).toUpperCase() + phase.slice(1)}
         </Badge>
       )
     },
   },
   {
-    accessorKey: 'context',
+    id: 'context',
+    accessorFn: (row) => row.spec.context,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Context Path' />
     ),
     cell: ({ row }) => (
       <code className='rounded bg-muted px-1.5 py-0.5 text-xs font-mono'>
-        {row.getValue('context')}
+        {row.original.spec.context}
       </code>
     ),
   },
   {
-    accessorKey: 'deployments',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Deployments' />
-    ),
-    cell: ({ row }) => {
-      const deployments = row.original.deployments
-      return (
-        <div className='flex items-center gap-1'>
-          <span className='text-sm font-medium'>{deployments.length}</span>
-          <span className='text-xs text-muted-foreground'>active</span>
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: 'policyChain',
+    id: 'policyChain',
+    accessorFn: (row) => row.spec.policyChain?.length ?? 0,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Policies' />
     ),
     cell: ({ row }) => {
-      const policies = row.original.policyChain.filter((p) => p.enabled)
+      const policies = (row.original.spec.policyChain || []).filter(
+        (p) => p.enabled
+      )
       return (
         <div className='flex items-center gap-1'>
           <span className='text-sm font-medium'>{policies.length}</span>
@@ -129,12 +121,13 @@ export const apisColumns: ColumnDef<API>[] = [
     },
   },
   {
-    accessorKey: 'updatedAt',
+    id: 'updatedAt',
+    accessorFn: (row) => row.metadata.updatedAt,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Updated' />
     ),
     cell: ({ row }) => {
-      const updatedAt = new Date(row.getValue('updatedAt'))
+      const updatedAt = new Date(row.original.metadata.updatedAt)
       return (
         <span className='text-xs text-muted-foreground'>
           {formatDistanceToNow(updatedAt, { addSuffix: true })}

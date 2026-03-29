@@ -1,4 +1,4 @@
-import type { API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import {
   Card,
   CardContent,
@@ -8,26 +8,28 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { FileCode, Download, Copy, Check } from 'lucide-react'
+import { FileCode, Copy, Check } from 'lucide-react'
 import { EmptyState } from '@/components/flowc'
 import { useState } from 'react'
 
 interface APISpecTabProps {
-  api: API
+  api: APIResponse
 }
 
 export function APISpecTab({ api }: APISpecTabProps) {
   const [copied, setCopied] = useState(false)
 
+  const specContent = api.spec.specContent
+
   const handleCopy = () => {
-    if (api.spec?.content) {
-      navigator.clipboard.writeText(api.spec.content)
+    if (specContent) {
+      navigator.clipboard.writeText(specContent)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
   }
 
-  if (!api.spec) {
+  if (!specContent) {
     return (
       <Card>
         <CardContent className='p-6'>
@@ -45,10 +47,12 @@ export function APISpecTab({ api }: APISpecTabProps) {
     )
   }
 
+  const parsedInfo = api.status?.parsedInfo
+
   return (
     <div className='space-y-4'>
       {/* Spec Info Card */}
-      {api.spec.parsedInfo && (
+      {parsedInfo && (
         <Card>
           <CardHeader>
             <CardTitle>Specification Details</CardTitle>
@@ -57,45 +61,43 @@ export function APISpecTab({ api }: APISpecTabProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  File Name
-                </p>
-                <p className='text-base font-mono text-sm mt-1'>
-                  {api.spec.fileName}
-                </p>
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Title
-                </p>
-                <p className='text-base mt-1'>{api.spec.parsedInfo.title}</p>
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Version
-                </p>
-                <p className='text-base mt-1'>{api.spec.parsedInfo.version}</p>
-              </div>
-              <div>
-                <p className='text-sm font-medium text-muted-foreground'>
-                  Paths
-                </p>
-                <p className='text-base mt-1'>
-                  {api.spec.parsedInfo.paths.length} endpoints
-                </p>
-              </div>
+            <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
+              {parsedInfo.title && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Title
+                  </p>
+                  <p className='text-base mt-1'>{parsedInfo.title}</p>
+                </div>
+              )}
+              {parsedInfo.version && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Version
+                  </p>
+                  <p className='text-base mt-1'>{parsedInfo.version}</p>
+                </div>
+              )}
+              {parsedInfo.paths && (
+                <div>
+                  <p className='text-sm font-medium text-muted-foreground'>
+                    Paths
+                  </p>
+                  <p className='text-base mt-1'>
+                    {parsedInfo.paths.length} endpoints
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Paths List */}
-            {api.spec.parsedInfo.paths.length > 0 && (
+            {parsedInfo.paths && parsedInfo.paths.length > 0 && (
               <div className='mt-6'>
                 <p className='text-sm font-medium text-muted-foreground mb-3'>
                   API Endpoints
                 </p>
                 <div className='grid gap-2 md:grid-cols-2 lg:grid-cols-3'>
-                  {api.spec.parsedInfo.paths.map((path, idx) => (
+                  {parsedInfo.paths.map((path, idx) => (
                     <Badge key={idx} variant='outline' className='font-mono'>
                       {path}
                     </Badge>
@@ -105,21 +107,20 @@ export function APISpecTab({ api }: APISpecTabProps) {
             )}
 
             {/* Servers */}
-            {api.spec.parsedInfo.servers &&
-              api.spec.parsedInfo.servers.length > 0 && (
-                <div className='mt-6'>
-                  <p className='text-sm font-medium text-muted-foreground mb-3'>
-                    Servers
-                  </p>
-                  <div className='space-y-2'>
-                    {api.spec.parsedInfo.servers.map((server, idx) => (
-                      <Badge key={idx} variant='secondary' className='font-mono'>
-                        {server}
-                      </Badge>
-                    ))}
-                  </div>
+            {parsedInfo.servers && parsedInfo.servers.length > 0 && (
+              <div className='mt-6'>
+                <p className='text-sm font-medium text-muted-foreground mb-3'>
+                  Servers
+                </p>
+                <div className='space-y-2'>
+                  {parsedInfo.servers.map((server, idx) => (
+                    <Badge key={idx} variant='secondary' className='font-mono'>
+                      {server}
+                    </Badge>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -131,7 +132,7 @@ export function APISpecTab({ api }: APISpecTabProps) {
             <div>
               <CardTitle>Raw Specification</CardTitle>
               <CardDescription>
-                View or download the complete OpenAPI specification file
+                View the complete OpenAPI specification
               </CardDescription>
             </div>
             <div className='flex gap-2'>
@@ -148,17 +149,13 @@ export function APISpecTab({ api }: APISpecTabProps) {
                   </>
                 )}
               </Button>
-              <Button variant='outline' size='sm' disabled>
-                <Download className='mr-2 h-4 w-4' />
-                Download
-              </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className='rounded-lg bg-muted p-4 max-h-[500px] overflow-auto'>
             <pre className='text-sm font-mono whitespace-pre-wrap break-all'>
-              {api.spec.content}
+              {specContent}
             </pre>
           </div>
         </CardContent>

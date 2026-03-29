@@ -1,6 +1,7 @@
+import { formatDistanceToNow } from 'date-fns'
 import { Link } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
-import { type Gateway } from '@/data/mock/flowc-data'
+import type { GatewayResponse } from '@/lib/api/openapi/types'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -8,10 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
-import { gatewayStatusStyles, regions } from '../data/constants'
+import { gatewayStatusStyles } from '../data/constants'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const gatewaysColumns: ColumnDef<Gateway>[] = [
+export const gatewaysColumns: ColumnDef<GatewayResponse>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -65,18 +66,19 @@ export const gatewaysColumns: ColumnDef<Gateway>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'name',
+    id: 'name',
+    accessorFn: (row) => row.metadata.name,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => (
       <Link
         to='/gateways/$gatewayId'
-        params={{ gatewayId: row.original.id }}
+        params={{ gatewayId: row.original.metadata.name }}
         className='hover:underline'
       >
         <LongText className='max-w-36 ps-3 font-medium'>
-          {row.getValue('name')}
+          {row.original.metadata.name}
         </LongText>
       </Link>
     ),
@@ -89,102 +91,52 @@ export const gatewaysColumns: ColumnDef<Gateway>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'nodeId',
+    id: 'nodeId',
+    accessorFn: (row) => row.spec.nodeId,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Node ID' />
     ),
     cell: ({ row }) => (
       <LongText className='max-w-32 text-muted-foreground'>
-        {row.getValue('nodeId')}
+        {row.original.spec.nodeId}
       </LongText>
     ),
   },
   {
-    accessorKey: 'status',
+    id: 'status',
+    accessorFn: (row) => row.status?.phase,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Status' />
     ),
     cell: ({ row }) => {
-      const { status } = row.original
-      const badgeColor = gatewayStatusStyles.get(status)
+      const phase = row.original.status?.phase || 'unknown'
+      const badgeColor = gatewayStatusStyles.get(phase) || gatewayStatusStyles.get('unknown')
       return (
         <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-          {status}
+          {phase}
         </Badge>
       )
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+    filterFn: (row, _id, value) => {
+      return value.includes(row.original.status?.phase || 'unknown')
     },
     enableHiding: false,
     enableSorting: false,
   },
   {
-    accessorKey: 'region',
+    id: 'updatedAt',
+    accessorFn: (row) => row.metadata.updatedAt,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Region' />
+      <DataTableColumnHeader column={column} title='Updated' />
     ),
     cell: ({ row }) => {
-      const { region } = row.original
-      const regionInfo = regions.find(({ value }) => value === region)
-
-      if (!regionInfo) {
-        return <span className='text-sm'>{region}</span>
-      }
-
+      const updatedAt = new Date(row.original.metadata.updatedAt)
       return (
-        <div className='flex items-center gap-x-2'>
-          {regionInfo.icon && (
-            <regionInfo.icon size={16} className='text-muted-foreground' />
-          )}
-          <span className='text-sm'>{regionInfo.label}</span>
-        </div>
+        <span className='text-xs text-muted-foreground'>
+          {formatDistanceToNow(updatedAt, { addSuffix: true })}
+        </span>
       )
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'ipAddress',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='IP Address' />
-    ),
-    cell: ({ row }) => (
-      <span className='font-mono text-sm'>{row.getValue('ipAddress')}</span>
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'listenerCount',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Listeners' />
-    ),
-    cell: ({ row }) => (
-      <div className='text-center'>{row.getValue('listenerCount')}</div>
-    ),
-  },
-  {
-    accessorKey: 'apiCount',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='APIs' />
-    ),
-    cell: ({ row }) => (
-      <div className='text-center'>{row.getValue('apiCount')}</div>
-    ),
-  },
-  {
-    accessorKey: 'version',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Version' />
-    ),
-    cell: ({ row }) => (
-      <Badge variant='secondary' className='font-mono text-xs'>
-        {row.getValue('version')}
-      </Badge>
-    ),
-    enableSorting: false,
   },
   {
     id: 'actions',

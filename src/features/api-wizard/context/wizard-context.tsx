@@ -3,6 +3,7 @@ import { useForm, UseFormReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { useUploadApiBundle } from '@/hooks/use-apis'
 import {
   apiWizardFormSchema,
   type ApiWizardFormData,
@@ -10,18 +11,15 @@ import {
   step1ASchema,
   step2Schema,
   step3Schema,
-  step4Schema,
-  step5Schema,
 } from '../data/schema'
 import {
   DEFAULT_API_INFO,
   DEFAULT_UPSTREAM_CONFIG,
-  DEFAULT_STRATEGY_OPTIONS,
-  DEFAULT_POLICIES_CONFIG,
   OPENAPI_FLOW_STEPS,
   SCRATCH_FLOW_STEPS,
   type WizardStep,
 } from '../data/constants'
+import { generateAPIBundle } from '../lib/yaml-generator'
 
 interface WizardContextValue {
   // Form state (React Hook Form)
@@ -61,8 +59,6 @@ const defaultValues: Partial<ApiWizardFormData> = {
   openApiFile: undefined,
   apiInfo: DEFAULT_API_INFO,
   upstream: DEFAULT_UPSTREAM_CONFIG,
-  strategy: DEFAULT_STRATEGY_OPTIONS,
-  policies: DEFAULT_POLICIES_CONFIG,
 }
 
 export function ApiWizardProvider({
@@ -71,12 +67,14 @@ export function ApiWizardProvider({
   children: React.ReactNode
 }) {
   const navigate = useNavigate()
+  const { mutateAsync: uploadBundle } = useUploadApiBundle()
+
   const [currentStep, setCurrentStep] =
     useState<WizardStep>('source-selection')
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [generatedYaml] = useState<string | null>(null)
-  const [generatedZip] = useState<Blob | null>(null)
+  const [generatedYaml, setGeneratedYaml] = useState<string | null>(null)
+  const [generatedZip, setGeneratedZip] = useState<Blob | null>(null)
 
   const form = useForm<ApiWizardFormData>({
     resolver: zodResolver(apiWizardFormSchema) as any,
@@ -128,18 +126,6 @@ export function ApiWizardProvider({
           })
           isValid = true
           break
-        case 'strategy-options':
-          await step4Schema.parseAsync({
-            strategy: form.getValues('strategy'),
-          })
-          isValid = true
-          break
-        case 'policies-config':
-          await step5Schema.parseAsync({
-            policies: form.getValues('policies'),
-          })
-          isValid = true
-          break
         case 'review-save':
           isValid = true
           break
@@ -180,7 +166,7 @@ export function ApiWizardProvider({
     }
   }
 
-  // Save API (as draft)
+  // Save API via ZIP bundle upload
   const saveAPI = async () => {
     try {
       setIsSaving(true)
@@ -190,16 +176,22 @@ export function ApiWizardProvider({
       const formData = form.getValues()
       await apiWizardFormSchema.parseAsync(formData)
 
-      // TODO: Generate YAML and ZIP (implemented in later phases)
-      // TODO: Call API creation endpoint
+      // Generate YAML and ZIP bundle
+      const { yaml, zip } = await generateAPIBundle(formData)
+      setGeneratedYaml(yaml)
+      setGeneratedZip(zip)
 
-      // Mock API creation for now
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Upload ZIP bundle to the control plane
+      const result = await uploadBundle(zip)
 
-      // For now, just show success and navigate to APIs list
-      // Later, navigate to the newly created API detail page
-      toast.success('API created successfully!')
-      navigate({ to: '/apis' })
+      // Find the created API name from the apply results
+      const apiResult = result.results?.find(
+        (r) => r.kind === 'API' && (r.action === 'created' || r.action === 'updated')
+      )
+      const apiName = apiResult?.name || formData.apiInfo.name
+
+      // Navigate to the newly created API detail page
+      navigate({ to: '/apis/$apiId', params: { apiId: apiName } })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to create API'

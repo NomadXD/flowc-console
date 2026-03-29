@@ -1,14 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { mockAPIAPI } from '@/data/mock/flowc-data'
+import { apisService } from '@/lib/api/services/apis'
+import { throwOnError } from '@/lib/api/throw-on-error'
 import { APIDetail } from '@/features/apis/detail'
 
 export const Route = createFileRoute('/_authenticated/apis/$apiId/')({
   component: RouteComponent,
   loader: async ({ params }) => {
-    const api = await mockAPIAPI.get(params.apiId)
-    if (!api) {
-      throw new Error('API not found')
-    }
+    const api = await apisService.get(params.apiId).then(throwOnError)
     return { api }
   },
 })

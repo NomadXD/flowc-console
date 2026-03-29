@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { type Gateway } from '@/data/mock/flowc-data'
+import type { GatewayResponse } from '@/lib/api/openapi/types'
 import { cn } from '@/lib/utils'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
@@ -25,12 +25,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { gatewayStatuses, regions } from '../data/constants'
+import { gatewayStatuses } from '../data/constants'
 import { gatewaysColumns as columns } from './gateways-columns'
 import { ListenersNestedTable } from './listeners-nested-table'
 
 type DataTableProps = {
-  data: Gateway[]
+  data: GatewayResponse[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
@@ -57,7 +57,6 @@ export function GatewaysTable({ data, search, navigate }: DataTableProps) {
     columnFilters: [
       { columnId: 'name', searchKey: 'name', type: 'string' },
       { columnId: 'status', searchKey: 'status', type: 'array' },
-      { columnId: 'region', searchKey: 'region', type: 'array' },
     ],
   })
 
@@ -110,14 +109,6 @@ export function GatewaysTable({ data, search, navigate }: DataTableProps) {
             columnId: 'status',
             title: 'Status',
             options: gatewayStatuses.map((status) => ({ ...status })),
-          },
-          {
-            columnId: 'region',
-            title: 'Region',
-            options: regions.map((region) => ({
-              label: region.label,
-              value: region.value,
-            })),
           },
         ]}
       />
@@ -176,7 +167,9 @@ export function GatewaysTable({ data, search, navigate }: DataTableProps) {
                   {row.getIsExpanded() && (
                     <TableRow>
                       <TableCell colSpan={columns.length} className='p-4'>
-                        <ListenersNestedTable gatewayId={row.original.id} />
+                        <ListenersNestedTable
+                          gatewayName={row.original.metadata.name}
+                        />
                       </TableCell>
                     </TableRow>
                   )}

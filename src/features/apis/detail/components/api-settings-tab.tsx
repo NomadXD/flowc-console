@@ -1,4 +1,4 @@
-import type { API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import {
   Card,
   CardContent,
@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/form'
 
 interface APISettingsTabProps {
-  api: API
+  api: APIResponse
 }
 
 const settingsFormSchema = z.object({
@@ -75,17 +75,17 @@ export function APISettingsTab({ api }: APISettingsTabProps) {
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
-      displayName: api.displayName,
-      description: api.description || '',
-      status: api.status,
-      context: api.context,
-      upstreamHost: api.upstream.host,
-      upstreamPort: api.upstream.port,
-      upstreamScheme: api.upstream.scheme,
-      upstreamTimeout: api.upstream.timeout,
-      matchType: api.routing.matchType,
-      caseSensitive: api.routing.caseSensitive,
-      loadBalancing: api.routing.loadBalancing,
+      displayName: api.spec.displayName || '',
+      description: api.spec.description || '',
+      status: (api.status?.phase || 'draft') as 'draft' | 'ready' | 'deployed' | 'deprecated',
+      context: api.spec.context,
+      upstreamHost: api.spec.upstream.host,
+      upstreamPort: api.spec.upstream.port,
+      upstreamScheme: (api.spec.upstream.scheme || 'http') as 'http' | 'https',
+      upstreamTimeout: api.spec.upstream.timeout || '30s',
+      matchType: (api.spec.routing?.matchType || 'prefix') as 'prefix' | 'exact' | 'regex',
+      caseSensitive: api.spec.routing?.caseSensitive ?? true,
+      loadBalancing: (api.spec.routing?.loadBalancing || 'round-robin') as 'round-robin' | 'random' | 'least-conn',
     },
   })
 
@@ -99,7 +99,7 @@ export function APISettingsTab({ api }: APISettingsTabProps) {
   }
 
   const handleDelete = () => {
-    console.log('Deleting API:', api.id)
+    console.log('Deleting API:', api.metadata.name)
     // Navigate to APIs list after deletion
   }
 
@@ -415,20 +415,8 @@ export function APISettingsTab({ api }: APISettingsTabProps) {
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This action cannot be undone. This will permanently delete
-                    the <strong>{api.displayName}</strong> API and remove all
+                    the <strong>{api.spec.displayName || api.metadata.name}</strong> API and remove all
                     associated deployments.
-                    {api.deployments.length > 0 && (
-                      <div className='mt-2 p-3 bg-destructive/10 rounded-md'>
-                        <p className='font-semibold text-destructive'>
-                          Warning: This API has {api.deployments.length} active
-                          deployment{api.deployments.length !== 1 ? 's' : ''}
-                        </p>
-                        <p className='text-sm mt-1'>
-                          Deleting this API will remove all deployments and
-                          affect live traffic.
-                        </p>
-                      </div>
-                    )}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

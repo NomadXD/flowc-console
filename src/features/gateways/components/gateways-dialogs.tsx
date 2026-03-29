@@ -1,9 +1,9 @@
 import { GatewayActionDialog } from './gateway-action-dialog'
 import { GatewayDeleteDialog } from './gateway-delete-dialog'
-import { useGateways } from './gateways-provider'
+import { useGatewaysContext } from './gateways-provider'
 
 export function GatewaysDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useGateways()
+  const { open, setOpen, currentRow, setCurrentRow } = useGatewaysContext()
   return (
     <>
       <GatewayActionDialog
@@ -15,7 +15,7 @@ export function GatewaysDialogs() {
       {currentRow && (
         <>
           <GatewayActionDialog
-            key={`gateway-edit-${currentRow.id}`}
+            key={`gateway-edit-${currentRow.metadata.name}`}
             open={open === 'edit'}
             onOpenChange={() => {
               setOpen('edit')
@@ -27,7 +27,7 @@ export function GatewaysDialogs() {
           />
 
           <GatewayDeleteDialog
-            key={`gateway-delete-${currentRow.id}`}
+            key={`gateway-delete-${currentRow.metadata.name}`}
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')

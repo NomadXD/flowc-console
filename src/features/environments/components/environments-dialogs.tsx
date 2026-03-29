@@ -1,9 +1,9 @@
 import { EnvironmentActionDialog } from './environment-action-dialog'
 import { EnvironmentDeleteDialog } from './environment-delete-dialog'
-import { useEnvironments } from './environments-provider'
+import { useEnvironmentsContext } from './environments-provider'
 
 export function EnvironmentsDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useEnvironments()
+  const { open, setOpen, currentRow, setCurrentRow } = useEnvironmentsContext()
   return (
     <>
       <EnvironmentActionDialog
@@ -15,7 +15,7 @@ export function EnvironmentsDialogs() {
       {currentRow && (
         <>
           <EnvironmentActionDialog
-            key={`environment-edit-${currentRow.gatewayId}-${currentRow.port}-${currentRow.name}`}
+            key={`environment-edit-${currentRow.metadata.name}`}
             open={open === 'edit'}
             onOpenChange={() => {
               setOpen('edit')
@@ -27,7 +27,7 @@ export function EnvironmentsDialogs() {
           />
 
           <EnvironmentDeleteDialog
-            key={`environment-delete-${currentRow.gatewayId}-${currentRow.port}-${currentRow.name}`}
+            key={`environment-delete-${currentRow.metadata.name}`}
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')

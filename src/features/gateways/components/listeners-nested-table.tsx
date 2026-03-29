@@ -1,5 +1,6 @@
-import { type Listener, mockListeners } from '@/data/mock/flowc-data'
-import { Shield, ShieldOff } from 'lucide-react'
+import type { ListenerResponse } from '@/lib/api/openapi/types'
+import { Shield, ShieldOff, Loader2 } from 'lucide-react'
+import { useListeners } from '@/hooks/use-listeners'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -11,11 +12,25 @@ import {
 } from '@/components/ui/table'
 
 interface ListenersNestedTableProps {
-  gatewayId: string
+  gatewayName: string
 }
 
-export function ListenersNestedTable({ gatewayId }: ListenersNestedTableProps) {
-  const listeners = mockListeners.filter((l) => l.gatewayId === gatewayId)
+export function ListenersNestedTable({
+  gatewayName,
+}: ListenersNestedTableProps) {
+  const { data, isLoading } = useListeners()
+
+  const listeners = (data?.items || []).filter(
+    (l: ListenerResponse) => l.spec.gatewayRef === gatewayName
+  )
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-8'>
+        <Loader2 className='h-5 w-5 animate-spin text-muted-foreground' />
+      </div>
+    )
+  }
 
   if (listeners.length === 0) {
     return (
@@ -30,35 +45,25 @@ export function ListenersNestedTable({ gatewayId }: ListenersNestedTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Name</TableHead>
             <TableHead className='w-24'>Port</TableHead>
-            <TableHead>Protocol</TableHead>
             <TableHead>TLS</TableHead>
-            <TableHead className='text-center'>Environments</TableHead>
-            <TableHead className='text-center'>APIs</TableHead>
-            <TableHead>Created</TableHead>
+            <TableHead>Address</TableHead>
+            <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {listeners.map((listener: Listener) => (
-            <TableRow key={`${listener.gatewayId}-${listener.port}`}>
-              <TableCell className='font-mono font-medium'>
-                {listener.port}
+          {listeners.map((listener: ListenerResponse) => (
+            <TableRow key={listener.metadata.name}>
+              <TableCell className='font-medium'>
+                {listener.metadata.name}
               </TableCell>
-              <TableCell>
-                <Badge
-                  variant='outline'
-                  className={
-                    listener.protocol === 'HTTPS'
-                      ? 'border-green-300 bg-green-100/30 text-green-900 dark:text-green-200'
-                      : 'border-blue-300 bg-blue-100/30 text-blue-900 dark:text-blue-200'
-                  }
-                >
-                  {listener.protocol}
-                </Badge>
+              <TableCell className='font-mono font-medium'>
+                {listener.spec.port}
               </TableCell>
               <TableCell>
                 <div className='flex items-center gap-x-2'>
-                  {listener.tlsEnabled ? (
+                  {listener.spec.tls ? (
                     <>
                       <Shield className='h-4 w-4 text-green-600' />
                       <span className='text-sm text-green-600'>Enabled</span>
@@ -73,12 +78,13 @@ export function ListenersNestedTable({ gatewayId }: ListenersNestedTableProps) {
                   )}
                 </div>
               </TableCell>
-              <TableCell className='text-center'>
-                {listener.environmentCount}
-              </TableCell>
-              <TableCell className='text-center'>{listener.apiCount}</TableCell>
               <TableCell className='text-sm text-muted-foreground'>
-                {new Date(listener.createdAt).toLocaleDateString()}
+                {listener.spec.address || '0.0.0.0'}
+              </TableCell>
+              <TableCell>
+                <Badge variant='outline' className='capitalize'>
+                  {listener.status?.phase || 'unknown'}
+                </Badge>
               </TableCell>
             </TableRow>
           ))}

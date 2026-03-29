@@ -1,5 +1,5 @@
 import { type Row } from '@tanstack/react-table'
-import { type API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import { MoreHorizontal, Trash2, Eye, Edit, Rocket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,8 +12,8 @@ import {
 import { useNavigate } from '@tanstack/react-router'
 
 interface DataTableRowActionsProps {
-  row: Row<API>
-  onDelete: (api: API) => void
+  row: Row<APIResponse>
+  onDelete: (api: APIResponse) => void
 }
 
 export function DataTableRowActions({ row, onDelete }: DataTableRowActionsProps) {
@@ -21,7 +21,7 @@ export function DataTableRowActions({ row, onDelete }: DataTableRowActionsProps)
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
-    navigate({ to: `/apis/$apiId`, params: { apiId: api.id } })
+    navigate({ to: `/apis/$apiId`, params: { apiId: api.metadata.name } })
   }
 
   return (

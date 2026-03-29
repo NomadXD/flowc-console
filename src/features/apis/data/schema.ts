@@ -1,23 +1,13 @@
-// Re-export schemas from the central schemas file
-export {
-  apiSchema,
-  apiCreateSchema,
-  apiUpdateSchema,
-  apiStatusSchema,
-  policyInstanceSchema,
-  upstreamConfigSchema,
-  routingConfigSchema,
-  openAPISpecSchema,
-  inheritanceModeSchema,
-  policyTypeExtendedSchema,
-  type API,
-  type APICreate,
-  type APIUpdate,
-  type APIStatus,
-  type PolicyInstance,
-  type InheritanceMode,
-  type UpstreamConfig,
-  type RoutingConfig,
-  type OpenAPISpec,
-  type PolicyTypeExtended,
-} from '@/data/schemas/flowc-schemas'
+// Re-export generated types from the OpenAPI spec
+export type {
+  APIResponse,
+  APISpec,
+  APIStatus,
+  APIPutRequest,
+  APIListResponse,
+  UpstreamConfig,
+  RoutingConfig,
+  PolicyInstance,
+  ResourceMeta,
+  ParsedInfo,
+} from '@/lib/api/openapi/types'

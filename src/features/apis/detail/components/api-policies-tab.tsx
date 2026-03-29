@@ -1,4 +1,4 @@
-import type { API } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
 import {
   Card,
   CardContent,
@@ -19,7 +19,7 @@ import {
 import { EmptyState } from '@/components/flowc'
 
 interface APIPoliciesTabProps {
-  api: API
+  api: APIResponse
 }
 
 export function APIPoliciesTab({ api }: APIPoliciesTabProps) {
@@ -49,7 +49,7 @@ export function APIPoliciesTab({ api }: APIPoliciesTabProps) {
     }
   }
 
-  if (api.policyChain.length === 0) {
+  if ((api.spec.policyChain || []).length === 0) {
     return (
       <Card>
         <CardContent className='p-6'>
@@ -86,7 +86,7 @@ export function APIPoliciesTab({ api }: APIPoliciesTabProps) {
         </CardHeader>
         <CardContent>
           <div className='space-y-3'>
-            {api.policyChain
+            {(api.spec.policyChain || [])
               .sort((a, b) => a.order - b.order)
               .map((policy) => (
                 <div
@@ -114,19 +114,21 @@ export function APIPoliciesTab({ api }: APIPoliciesTabProps) {
                       <h4 className='font-semibold'>
                         {getPolicyTypeLabel(policy.policyType)}
                       </h4>
-                      <Badge
-                        variant={getInheritanceModeColor(
-                          policy.inheritanceMode
-                        )}
-                      >
-                        {policy.inheritanceMode.charAt(0).toUpperCase() +
-                          policy.inheritanceMode.slice(1)}
-                      </Badge>
+                      {policy.inheritanceMode && (
+                        <Badge
+                          variant={getInheritanceModeColor(
+                            policy.inheritanceMode
+                          )}
+                        >
+                          {policy.inheritanceMode.charAt(0).toUpperCase() +
+                            policy.inheritanceMode.slice(1)}
+                        </Badge>
+                      )}
                       {!policy.enabled && (
                         <Badge variant='secondary'>Disabled</Badge>
                       )}
                     </div>
-                    {Object.keys(policy.config).length > 0 && (
+                    {policy.config && Object.keys(policy.config).length > 0 && (
                       <p className='text-sm text-muted-foreground mt-1'>
                         {Object.entries(policy.config)
                           .slice(0, 2)

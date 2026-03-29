@@ -1,5 +1,6 @@
 import { getRouteApi } from '@tanstack/react-router'
-import { mockListeners } from '@/data/mock/flowc-data'
+import { Loader2 } from 'lucide-react'
+import { useListeners } from '@/hooks/use-listeners'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -16,6 +17,9 @@ const route = getRouteApi('/_authenticated/listeners/')
 export function Listeners() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
+
+  const { data, isLoading, error } = useListeners()
+  const listeners = data?.items || []
 
   return (
     <ListenersProvider>
@@ -38,11 +42,24 @@ export function Listeners() {
           </div>
           <ListenersPrimaryButtons />
         </div>
-        <ListenersTable
-          data={mockListeners}
-          search={search}
-          navigate={navigate}
-        />
+
+        {error && (
+          <div className='rounded-md bg-destructive/15 p-4 text-sm text-destructive'>
+            Error loading listeners: {error.message}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className='flex items-center justify-center py-12'>
+            <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+          </div>
+        ) : (
+          <ListenersTable
+            data={listeners}
+            search={search}
+            navigate={navigate}
+          />
+        )}
       </Main>
 
       <ListenersDialogs />

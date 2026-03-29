@@ -1,4 +1,5 @@
 import * as yaml from 'js-yaml'
+import JSZip from 'jszip'
 import type { ApiWizardFormData } from '../data/schema'
 
 interface FlowcConfig {
@@ -45,14 +46,14 @@ export function generateFlowcYaml(
     },
     strategy: {
       deployment: {
-        type: formData.strategy.deployment.type,
+        type: formData.strategy?.deployment.type || 'basic',
       },
       route_matching: {
-        type: formData.strategy.routeMatching.type,
-        case_sensitive: formData.strategy.routeMatching.caseSensitive,
+        type: formData.strategy?.routeMatching.type || 'prefix',
+        case_sensitive: formData.strategy?.routeMatching.caseSensitive ?? true,
       },
       load_balancing: {
-        type: formData.strategy.loadBalancing.type,
+        type: formData.strategy?.loadBalancing.type || 'round-robin',
       },
     },
   }
@@ -131,4 +132,49 @@ export function generateMinimalOpenApiSpec(
     indent: 2,
     lineWidth: 120,
   })
+}
+
+/**
+ * Generate API bundle (YAML + OpenAPI spec in ZIP)
+ * This creates a ZIP file containing:
+ * - flowc.yaml (FlowC configuration)
+ * - openapi.yaml (OpenAPI spec - either uploaded or generated minimal spec)
+ */
+export async function generateAPIBundle(
+  formData: ApiWizardFormData
+): Promise<{ yaml: string; zip: Blob }> {
+  const zip = new JSZip()
+
+  // Generate FlowC config YAML
+  const flowcYaml = generateFlowcYaml(formData)
+
+  // Get OpenAPI spec (either uploaded or generate minimal)
+  let openApiSpec: string
+  if (formData.openApiFile) {
+    // Use uploaded OpenAPI spec
+    openApiSpec = formData.openApiFile.fileContent
+  } else {
+    // Generate minimal OpenAPI spec for scratch flow
+    openApiSpec = generateMinimalOpenApiSpec(
+      formData.apiInfo.displayName,
+      formData.apiInfo.version,
+      formData.apiInfo.description || ''
+    )
+  }
+
+  // Add files to ZIP (backend expects 'flowc.yaml', not 'flowc-config.yaml')
+  zip.file('flowc.yaml', flowcYaml)
+  zip.file('openapi.yaml', openApiSpec)
+
+  // Generate ZIP blob
+  const zipBlob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 },
+  })
+
+  return {
+    yaml: flowcYaml,
+    zip: zipBlob,
+  }
 }

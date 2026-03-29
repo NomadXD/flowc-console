@@ -11,8 +11,9 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { type Listener, mockGateways } from '@/data/mock/flowc-data'
+import type { ListenerResponse } from '@/lib/api/openapi/types'
 import { cn } from '@/lib/utils'
+import { useGateways } from '@/hooks/use-gateways'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -23,11 +24,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { protocolOptions, tlsOptions } from '../data/constants'
+import { tlsOptions } from '../data/constants'
 import { listenersColumns as columns } from './listeners-columns'
 
 type DataTableProps = {
-  data: Listener[]
+  data: ListenerResponse[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
@@ -51,17 +52,17 @@ export function ListenersTable({ data, search, navigate }: DataTableProps) {
     pagination: { defaultPage: 1, defaultPageSize: 10 },
     globalFilter: { enabled: false },
     columnFilters: [
-      { columnId: 'port', searchKey: 'port', type: 'string' },
-      { columnId: 'protocol', searchKey: 'protocol', type: 'array' },
-      { columnId: 'gatewayName', searchKey: 'gateway', type: 'array' },
-      { columnId: 'tlsEnabled', searchKey: 'tls', type: 'array' },
+      { columnId: 'name', searchKey: 'name', type: 'string' },
+      { columnId: 'gatewayRef', searchKey: 'gateway', type: 'array' },
+      { columnId: 'tls', searchKey: 'tls', type: 'array' },
     ],
   })
 
-  // Build gateway filter options from mockGateways
-  const gatewayOptions = mockGateways.map((gateway) => ({
-    label: gateway.name,
-    value: gateway.id,
+  // Build gateway filter options from real data
+  const { data: gatewaysData } = useGateways()
+  const gatewayOptions = (gatewaysData?.items || []).map((gateway) => ({
+    label: gateway.metadata.name,
+    value: gateway.metadata.name,
   }))
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -102,21 +103,16 @@ export function ListenersTable({ data, search, navigate }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder='Search by port or gateway...'
-        searchKey='port'
+        searchPlaceholder='Search listeners...'
+        searchKey='name'
         filters={[
           {
-            columnId: 'protocol',
-            title: 'Protocol',
-            options: protocolOptions.map((protocol) => ({ ...protocol })),
-          },
-          {
-            columnId: 'gatewayName',
+            columnId: 'gatewayRef',
             title: 'Gateway',
             options: gatewayOptions,
           },
           {
-            columnId: 'tlsEnabled',
+            columnId: 'tls',
             title: 'TLS',
             options: tlsOptions,
           },

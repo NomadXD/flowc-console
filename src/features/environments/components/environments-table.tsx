@@ -11,12 +11,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import {
-  type Environment,
-  mockGateways,
-  mockListeners,
-} from '@/data/mock/flowc-data'
+import type { EnvironmentResponse } from '@/lib/api/openapi/types'
 import { cn } from '@/lib/utils'
+import { useGateways } from '@/hooks/use-gateways'
+import { useListeners } from '@/hooks/use-listeners'
 import { type NavigateFn, useTableUrlState } from '@/hooks/use-table-url-state'
 import {
   Table,
@@ -30,7 +28,7 @@ import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { environmentsColumns as columns } from './environments-columns'
 
 type DataTableProps = {
-  data: Environment[]
+  data: EnvironmentResponse[]
   search: Record<string, unknown>
   navigate: NavigateFn
 }
@@ -56,32 +54,24 @@ export function EnvironmentsTable({ data, search, navigate }: DataTableProps) {
     columnFilters: [
       { columnId: 'name', searchKey: 'name', type: 'string' },
       { columnId: 'hostname', searchKey: 'hostname', type: 'string' },
-      { columnId: 'gatewayName', searchKey: 'gateway', type: 'array' },
-      { columnId: 'port', searchKey: 'port', type: 'array' },
-      { columnId: 'tlsEnabled', searchKey: 'tls', type: 'array' },
+      { columnId: 'gatewayRef', searchKey: 'gateway', type: 'array' },
+      { columnId: 'listenerRef', searchKey: 'listener', type: 'array' },
     ],
   })
 
-  // Build gateway filter options from mockGateways
-  const gatewayOptions = mockGateways.map((gateway) => ({
-    label: gateway.name,
-    value: gateway.id,
+  // Build gateway filter options from real data
+  const { data: gatewaysData } = useGateways()
+  const gatewayOptions = (gatewaysData?.items || []).map((gateway) => ({
+    label: gateway.metadata.name,
+    value: gateway.metadata.name,
   }))
 
-  // Build port filter options from unique ports in mockListeners
-  const uniquePorts = Array.from(
-    new Set(mockListeners.map((listener) => listener.port))
-  ).sort((a, b) => a - b)
-  const portOptions = uniquePorts.map((port) => ({
-    label: port.toString(),
-    value: port.toString(),
+  // Build listener filter options from real data
+  const { data: listenersData } = useListeners()
+  const listenerOptions = (listenersData?.items || []).map((listener) => ({
+    label: `${listener.metadata.name} (:${listener.spec.port})`,
+    value: listener.metadata.name,
   }))
-
-  // TLS filter options
-  const tlsOptions = [
-    { label: 'Enabled', value: 'true' },
-    { label: 'Disabled', value: 'false' },
-  ]
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -125,19 +115,14 @@ export function EnvironmentsTable({ data, search, navigate }: DataTableProps) {
         searchKey='name'
         filters={[
           {
-            columnId: 'gatewayName',
+            columnId: 'gatewayRef',
             title: 'Gateway',
             options: gatewayOptions,
           },
           {
-            columnId: 'port',
-            title: 'Port',
-            options: portOptions,
-          },
-          {
-            columnId: 'tlsEnabled',
-            title: 'TLS',
-            options: tlsOptions,
+            columnId: 'listenerRef',
+            title: 'Listener',
+            options: listenerOptions,
           },
         ]}
       />

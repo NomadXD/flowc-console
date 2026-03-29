@@ -1,5 +1,8 @@
-import type { API } from '@/data/mock/flowc-data'
-import { mockGateways, mockListeners, mockEnvironments } from '@/data/mock/flowc-data'
+import type { APIResponse } from '@/lib/api/openapi/types'
+import { useGateways } from '@/hooks/use-gateways'
+import { useListeners } from '@/hooks/use-listeners'
+import { useEnvironments } from '@/hooks/use-environments'
+import { usePutDeployment } from '@/hooks/use-deployments'
 import {
   Dialog,
   DialogContent,
@@ -17,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -25,11 +27,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Rocket, Shield, CheckCircle2 } from 'lucide-react'
+import { Rocket } from 'lucide-react'
 import { useState } from 'react'
 
 interface DeployAPIDialogProps {
-  api: API
+  api: APIResponse
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -40,44 +42,49 @@ export function DeployAPIDialog({
   onOpenChange,
 }: DeployAPIDialogProps) {
   const [selectedGateway, setSelectedGateway] = useState<string>('')
-  const [selectedPort, setSelectedPort] = useState<string>('')
+  const [selectedListener, setSelectedListener] = useState<string>('')
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>('')
-  const [isDeploying, setIsDeploying] = useState(false)
 
-  // Get listeners for selected gateway
-  const availableListeners = selectedGateway
-    ? mockListeners.filter((l) => l.gatewayId === selectedGateway)
-    : []
+  const { data: gatewaysData } = useGateways()
+  const { data: listenersData } = useListeners()
+  const { data: environmentsData } = useEnvironments()
+  const { mutate: putDeployment, isPending: isDeploying } = usePutDeployment()
 
-  // Get environments for selected gateway and port
-  const availableEnvironments =
-    selectedGateway && selectedPort
-      ? mockEnvironments.filter(
-          (e) => e.gatewayId === selectedGateway && e.port === Number(selectedPort)
-        )
-      : []
+  const gateways = gatewaysData?.items || []
+  const listeners = listenersData?.items || []
+  const environments = environmentsData?.items || []
 
   const handleDeploy = () => {
-    setIsDeploying(true)
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Deploying API:', {
-        apiId: api.id,
-        gateway: selectedGateway,
-        port: selectedPort,
-        environment: selectedEnvironment,
-      })
-      setIsDeploying(false)
-      onOpenChange(false)
-      // Reset form
-      setSelectedGateway('')
-      setSelectedPort('')
-      setSelectedEnvironment('')
-    }, 2000)
+    const deploymentName = `${api.metadata.name}-${selectedEnvironment}`
+
+    putDeployment(
+      {
+        name: deploymentName,
+        body: {
+          spec: {
+            apiRef: api.metadata.name,
+            gatewayRef: selectedGateway,
+            listenerRef: selectedListener,
+            environmentRef: selectedEnvironment,
+          },
+        },
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false)
+          setSelectedGateway('')
+          setSelectedListener('')
+          setSelectedEnvironment('')
+        },
+      }
+    )
   }
 
   const canDeploy =
-    selectedGateway && selectedPort && selectedEnvironment && !isDeploying
+    selectedGateway &&
+    selectedListener &&
+    selectedEnvironment &&
+    !isDeploying
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -85,17 +92,14 @@ export function DeployAPIDialog({
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
             <Rocket className='h-5 w-5' />
-            Deploy API: {api.displayName}
+            Deploy API: {api.spec.displayName || api.metadata.name}
           </DialogTitle>
           <DialogDescription>
-            Select the target environment to deploy this API. Policies will be
-            applied based on the environment configuration and API-specific
-            overrides.
+            Select the target environment to deploy this API.
           </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-6 py-4'>
-          {/* Target Selection */}
           <Card>
             <CardHeader>
               <CardTitle>Target Environment</CardTitle>
@@ -112,7 +116,7 @@ export function DeployAPIDialog({
                     value={selectedGateway}
                     onValueChange={(value) => {
                       setSelectedGateway(value)
-                      setSelectedPort('')
+                      setSelectedListener('')
                       setSelectedEnvironment('')
                     }}
                   >
@@ -120,40 +124,46 @@ export function DeployAPIDialog({
                       <SelectValue placeholder='Select a gateway' />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockGateways
-                        .filter((g) => g.status === 'online')
-                        .map((gateway) => (
-                          <SelectItem key={gateway.id} value={gateway.id}>
-                            {gateway.name} ({gateway.region})
-                          </SelectItem>
-                        ))}
+                      {gateways.map((gateway) => (
+                        <SelectItem
+                          key={gateway.metadata.name}
+                          value={gateway.metadata.name}
+                        >
+                          {gateway.metadata.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Listener/Port Selection */}
+                {/* Listener Selection */}
                 <div className='space-y-2'>
-                  <Label htmlFor='port'>Listener (Port)</Label>
+                  <Label htmlFor='listener'>Listener</Label>
                   <Select
-                    value={selectedPort}
+                    value={selectedListener}
                     onValueChange={(value) => {
-                      setSelectedPort(value)
+                      setSelectedListener(value)
                       setSelectedEnvironment('')
                     }}
                     disabled={!selectedGateway}
                   >
-                    <SelectTrigger id='port'>
+                    <SelectTrigger id='listener'>
                       <SelectValue placeholder='Select a listener' />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableListeners.map((listener) => (
-                        <SelectItem
-                          key={listener.port}
-                          value={String(listener.port)}
-                        >
-                          {listener.port} ({listener.protocol})
-                        </SelectItem>
-                      ))}
+                      {listeners
+                        .filter(
+                          (l) => l.spec.gatewayRef === selectedGateway
+                        )
+                        .map((listener) => (
+                          <SelectItem
+                            key={listener.metadata.name}
+                            value={listener.metadata.name}
+                          >
+                            {listener.metadata.name} (port{' '}
+                            {listener.spec.port})
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -164,17 +174,26 @@ export function DeployAPIDialog({
                   <Select
                     value={selectedEnvironment}
                     onValueChange={setSelectedEnvironment}
-                    disabled={!selectedPort}
+                    disabled={!selectedListener}
                   >
                     <SelectTrigger id='environment'>
                       <SelectValue placeholder='Select an environment' />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableEnvironments.map((env) => (
-                        <SelectItem key={env.name} value={env.name}>
-                          {env.name} ({env.hostname})
-                        </SelectItem>
-                      ))}
+                      {environments
+                        .filter(
+                          (e) =>
+                            e.spec.gatewayRef === selectedGateway &&
+                            e.spec.listenerRef === selectedListener
+                        )
+                        .map((env) => (
+                          <SelectItem
+                            key={env.metadata.name}
+                            value={env.metadata.name}
+                          >
+                            {env.metadata.name} ({env.spec.hostname})
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -182,91 +201,8 @@ export function DeployAPIDialog({
             </CardContent>
           </Card>
 
-          {/* Policy Preview */}
-          {selectedEnvironment && (
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <Shield className='h-5 w-5' />
-                  Policy Chain Preview
-                </CardTitle>
-                <CardDescription>
-                  Final policy execution order for this deployment
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {api.policyChain.length > 0 ? (
-                  <div className='space-y-2'>
-                    {api.policyChain
-                      .filter((p) => p.enabled)
-                      .sort((a, b) => a.order - b.order)
-                      .map((policy, index) => (
-                        <div
-                          key={policy.id}
-                          className='flex items-center gap-3 rounded-lg border p-3'
-                        >
-                          <div className='flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary'>
-                            {index + 1}
-                          </div>
-                          <div className='flex-1'>
-                            <div className='flex items-center gap-2'>
-                              <span className='font-medium'>
-                                {policy.policyType
-                                  .split('-')
-                                  .map(
-                                    (word) =>
-                                      word.charAt(0).toUpperCase() +
-                                      word.slice(1)
-                                  )
-                                  .join(' ')}
-                              </span>
-                              <Badge
-                                variant={
-                                  policy.inheritanceMode === 'inherit'
-                                    ? 'secondary'
-                                    : policy.inheritanceMode === 'override'
-                                      ? 'default'
-                                      : policy.inheritanceMode === 'add'
-                                        ? 'default'
-                                        : 'destructive'
-                                }
-                              >
-                                {policy.inheritanceMode}
-                              </Badge>
-                            </div>
-                          </div>
-                          <CheckCircle2 className='h-4 w-4 text-success' />
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className='text-sm text-muted-foreground text-center py-4'>
-                    No policies configured for this API. Environment default
-                    policies will be used.
-                  </p>
-                )}
-
-                {/* Info Box */}
-                <div className='mt-4 rounded-lg bg-muted p-3 text-sm'>
-                  <p className='text-muted-foreground'>
-                    <strong>Note:</strong> Policies marked as{' '}
-                    <Badge variant='secondary' className='mx-1'>
-                      inherit
-                    </Badge>
-                    will use the environment's default configuration. Policies
-                    marked as{' '}
-                    <Badge variant='default' className='mx-1'>
-                      override
-                    </Badge>
-                    will use API-specific settings.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Deployment Summary */}
-          {selectedGateway && selectedPort && selectedEnvironment && (
+          {canDeploy && (
             <Card>
               <CardHeader>
                 <CardTitle>Deployment Summary</CardTitle>
@@ -275,24 +211,21 @@ export function DeployAPIDialog({
                 <dl className='grid grid-cols-2 gap-3 text-sm'>
                   <div>
                     <dt className='text-muted-foreground'>API</dt>
-                    <dd className='font-medium'>{api.displayName}</dd>
-                  </div>
-                  <div>
-                    <dt className='text-muted-foreground'>Version</dt>
-                    <dd className='font-medium'>{api.version}</dd>
-                  </div>
-                  <div>
-                    <dt className='text-muted-foreground'>Gateway</dt>
                     <dd className='font-medium'>
-                      {
-                        mockGateways.find((g) => g.id === selectedGateway)
-                          ?.name
-                      }
+                      {api.spec.displayName || api.metadata.name}
                     </dd>
                   </div>
                   <div>
-                    <dt className='text-muted-foreground'>Port</dt>
-                    <dd className='font-medium'>{selectedPort}</dd>
+                    <dt className='text-muted-foreground'>Version</dt>
+                    <dd className='font-medium'>{api.spec.version}</dd>
+                  </div>
+                  <div>
+                    <dt className='text-muted-foreground'>Gateway</dt>
+                    <dd className='font-medium'>{selectedGateway}</dd>
+                  </div>
+                  <div>
+                    <dt className='text-muted-foreground'>Listener</dt>
+                    <dd className='font-medium'>{selectedListener}</dd>
                   </div>
                   <div>
                     <dt className='text-muted-foreground'>Environment</dt>
@@ -300,7 +233,9 @@ export function DeployAPIDialog({
                   </div>
                   <div>
                     <dt className='text-muted-foreground'>Context Path</dt>
-                    <dd className='font-medium font-mono'>{api.context}</dd>
+                    <dd className='font-medium font-mono'>
+                      {api.spec.context}
+                    </dd>
                   </div>
                 </dl>
               </CardContent>

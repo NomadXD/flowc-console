@@ -1,16 +1,14 @@
-import { Link } from '@tanstack/react-router'
 import { type ColumnDef } from '@tanstack/react-table'
-import { type Listener } from '@/data/mock/flowc-data'
+import type { ListenerResponse } from '@/lib/api/openapi/types'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
-import { protocolStyles } from '../data/constants'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const listenersColumns: ColumnDef<Listener>[] = [
+export const listenersColumns: ColumnDef<ListenerResponse>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -39,12 +37,15 @@ export const listenersColumns: ColumnDef<Listener>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'port',
+    id: 'name',
+    accessorFn: (row) => row.metadata.name,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Port' />
+      <DataTableColumnHeader column={column} title='Name' />
     ),
     cell: ({ row }) => (
-      <div className='ps-3 font-mono font-semibold'>{row.getValue('port')}</div>
+      <LongText className='max-w-40 ps-3 font-medium'>
+        {row.original.metadata.name}
+      </LongText>
     ),
     meta: {
       className: cn(
@@ -55,49 +56,41 @@ export const listenersColumns: ColumnDef<Listener>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'protocol',
+    id: 'port',
+    accessorFn: (row) => row.spec.port,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Protocol' />
+      <DataTableColumnHeader column={column} title='Port' />
     ),
-    cell: ({ row }) => {
-      const protocol = row.getValue('protocol') as Listener['protocol']
-      const style = protocolStyles[protocol]
-      return <Badge variant={style.variant}>{style.label}</Badge>
-    },
-    filterFn: (row, _id, value) => {
-      return value.includes(row.getValue('protocol'))
-    },
+    cell: ({ row }) => (
+      <div className='font-mono font-semibold'>{row.original.spec.port}</div>
+    ),
   },
   {
-    accessorKey: 'gatewayName',
+    id: 'gatewayRef',
+    accessorFn: (row) => row.spec.gatewayRef,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Gateway' />
     ),
     cell: ({ row }) => (
-      <Link
-        to='/gateways/$gatewayId'
-        params={{ gatewayId: row.original.gatewayId }}
-        className='hover:underline'
-      >
-        <LongText className='max-w-40 font-medium text-primary'>
-          {row.getValue('gatewayName')}
-        </LongText>
-      </Link>
+      <LongText className='max-w-40 font-medium text-primary'>
+        {row.original.spec.gatewayRef}
+      </LongText>
     ),
     filterFn: (row, _id, value) => {
-      return value.includes(row.original.gatewayId)
+      return value.includes(row.original.spec.gatewayRef)
     },
   },
   {
-    accessorKey: 'tlsEnabled',
+    id: 'tls',
+    accessorFn: (row) => !!row.spec.tls,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='TLS' />
     ),
     cell: ({ row }) => {
-      const tlsEnabled = row.getValue('tlsEnabled') as boolean
+      const hasTls = !!row.original.spec.tls
       return (
         <div className='flex items-center gap-2'>
-          {tlsEnabled ? (
+          {hasTls ? (
             <>
               <CheckCircle2 className='h-4 w-4 text-green-600 dark:text-green-500' />
               <span className='text-sm'>Enabled</span>
@@ -112,29 +105,36 @@ export const listenersColumns: ColumnDef<Listener>[] = [
       )
     },
     filterFn: (row, _id, value) => {
-      const tlsEnabled = row.getValue('tlsEnabled') as boolean
-      return value.includes(tlsEnabled.toString())
+      const hasTls = !!row.original.spec.tls
+      return value.includes(hasTls.toString())
     },
   },
   {
-    accessorKey: 'environmentCount',
+    id: 'address',
+    accessorFn: (row) => row.spec.address,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Environments' />
+      <DataTableColumnHeader column={column} title='Address' />
     ),
     cell: ({ row }) => (
-      <div className='text-center tabular-nums'>
-        {row.getValue('environmentCount')}
-      </div>
+      <span className='font-mono text-sm text-muted-foreground'>
+        {row.original.spec.address || '0.0.0.0'}
+      </span>
     ),
   },
   {
-    accessorKey: 'apiCount',
+    id: 'status',
+    accessorFn: (row) => row.status?.phase,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='APIs' />
+      <DataTableColumnHeader column={column} title='Status' />
     ),
-    cell: ({ row }) => (
-      <div className='text-center tabular-nums'>{row.getValue('apiCount')}</div>
-    ),
+    cell: ({ row }) => {
+      const phase = row.original.status?.phase || 'unknown'
+      return (
+        <Badge variant='outline' className='capitalize'>
+          {phase}
+        </Badge>
+      )
+    },
   },
   {
     id: 'actions',

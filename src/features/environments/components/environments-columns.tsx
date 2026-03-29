@@ -1,16 +1,16 @@
-import { Link } from '@tanstack/react-router'
+import { formatDistanceToNow } from 'date-fns'
 import { type ColumnDef } from '@tanstack/react-table'
-import { type Environment } from '@/data/mock/flowc-data'
-import { CheckCircle2, XCircle, Shield } from 'lucide-react'
+import type { EnvironmentResponse } from '@/lib/api/openapi/types'
+import { Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from '@/components/data-table'
 import { LongText } from '@/components/long-text'
-import { getEnvironmentStyle, hasTLS } from '../data/constants'
+import { getEnvironmentStyle } from '../data/constants'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const environmentsColumns: ColumnDef<Environment>[] = [
+export const environmentsColumns: ColumnDef<EnvironmentResponse>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -39,26 +39,16 @@ export const environmentsColumns: ColumnDef<Environment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'name',
+    id: 'name',
+    accessorFn: (row) => row.metadata.name,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Environment' />
     ),
     cell: ({ row }) => {
-      const style = getEnvironmentStyle(row.getValue('name'))
-      const env = row.original
+      const style = getEnvironmentStyle(row.original.metadata.name)
       return (
         <div className='flex items-center gap-2 ps-3'>
-          <Link
-            to='/environments/$gatewayId/$port/$envName'
-            params={{
-              gatewayId: env.gatewayId,
-              port: env.port.toString(),
-              envName: env.name,
-            }}
-            className='hover:underline'
-          >
-            <Badge variant={style.variant}>{style.label}</Badge>
-          </Link>
+          <Badge variant={style.variant}>{style.label}</Badge>
         </div>
       )
     },
@@ -71,105 +61,96 @@ export const environmentsColumns: ColumnDef<Environment>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'hostname',
+    id: 'hostname',
+    accessorFn: (row) => row.spec.hostname,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Hostname' />
     ),
     cell: ({ row }) => (
       <LongText className='max-w-60 font-mono text-sm'>
-        {row.getValue('hostname')}
+        {row.original.spec.hostname}
       </LongText>
     ),
   },
   {
-    accessorKey: 'gatewayName',
+    id: 'gatewayRef',
+    accessorFn: (row) => row.spec.gatewayRef,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Gateway' />
     ),
     cell: ({ row }) => (
-      <Link
-        to='/gateways/$gatewayId'
-        params={{ gatewayId: row.original.gatewayId }}
-        className='hover:underline'
-      >
-        <LongText className='max-w-40 font-medium text-primary'>
-          {row.getValue('gatewayName')}
-        </LongText>
-      </Link>
+      <LongText className='max-w-40 font-medium text-primary'>
+        {row.original.spec.gatewayRef}
+      </LongText>
     ),
     filterFn: (row, _id, value) => {
-      return value.includes(row.original.gatewayId)
+      return value.includes(row.original.spec.gatewayRef)
     },
   },
   {
-    accessorKey: 'port',
+    id: 'listenerRef',
+    accessorFn: (row) => row.spec.listenerRef,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Port' />
+      <DataTableColumnHeader column={column} title='Listener' />
     ),
     cell: ({ row }) => (
-      <div className='font-mono font-semibold'>{row.getValue('port')}</div>
+      <LongText className='max-w-40 font-mono text-sm'>
+        {row.original.spec.listenerRef}
+      </LongText>
     ),
     filterFn: (row, _id, value) => {
-      const port = row.getValue('port') as number
-      return value.includes(port.toString())
+      return value.includes(row.original.spec.listenerRef)
     },
   },
   {
-    id: 'tlsEnabled',
-    accessorFn: (row) => hasTLS(row),
+    id: 'httpFilters',
+    accessorFn: (row) => row.spec.httpFilters?.length ?? 0,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='TLS' />
+      <DataTableColumnHeader column={column} title='HTTP Filters' />
     ),
     cell: ({ row }) => {
-      const tlsEnabled = hasTLS(row.original)
+      const filters = row.original.spec.httpFilters || []
       return (
         <div className='flex items-center gap-2'>
-          {tlsEnabled ? (
+          {filters.length > 0 ? (
             <>
-              <CheckCircle2 className='h-4 w-4 text-green-600 dark:text-green-500' />
-              <span className='text-sm'>Enabled</span>
-            </>
-          ) : (
-            <>
-              <XCircle className='h-4 w-4 text-muted-foreground' />
-              <span className='text-sm text-muted-foreground'>Disabled</span>
-            </>
-          )}
-        </div>
-      )
-    },
-    filterFn: (row, _id, value) => {
-      const tlsEnabled = hasTLS(row.original)
-      return value.includes(tlsEnabled.toString())
-    },
-  },
-  {
-    accessorKey: 'apiCount',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='APIs' />
-    ),
-    cell: ({ row }) => (
-      <div className='text-center tabular-nums'>{row.getValue('apiCount')}</div>
-    ),
-  },
-  {
-    accessorKey: 'policies',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Policies' />
-    ),
-    cell: ({ row }) => {
-      const policies = row.getValue('policies') as string[]
-      return (
-        <div className='flex items-center gap-2'>
-          {policies.length > 0 ? (
-            <>
-              <Shield className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-              <span className='text-sm tabular-nums'>{policies.length}</span>
+              <Filter className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+              <span className='text-sm tabular-nums'>{filters.length}</span>
             </>
           ) : (
             <span className='text-sm text-muted-foreground'>None</span>
           )}
         </div>
+      )
+    },
+  },
+  {
+    id: 'status',
+    accessorFn: (row) => row.status?.phase,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Status' />
+    ),
+    cell: ({ row }) => {
+      const phase = row.original.status?.phase || 'unknown'
+      return (
+        <Badge variant='outline' className='capitalize'>
+          {phase}
+        </Badge>
+      )
+    },
+  },
+  {
+    id: 'updatedAt',
+    accessorFn: (row) => row.metadata.updatedAt,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Updated' />
+    ),
+    cell: ({ row }) => {
+      const updatedAt = new Date(row.original.metadata.updatedAt)
+      return (
+        <span className='text-xs text-muted-foreground'>
+          {formatDistanceToNow(updatedAt, { addSuffix: true })}
+        </span>
       )
     },
   },

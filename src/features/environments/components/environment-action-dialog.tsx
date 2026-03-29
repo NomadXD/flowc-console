@@ -1,18 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  type Environment,
-  mockGateways,
-  mockListeners,
-} from '@/data/mock/flowc-data'
-import {
-  environmentFormSchema,
-  type EnvironmentCreate,
-} from '@/data/schemas/flowc-schemas'
-import { showSubmittedData } from '@/lib/show-submitted-data'
+import { z } from 'zod'
+import type { EnvironmentResponse } from '@/lib/api/openapi/types'
+import { useGateways } from '@/hooks/use-gateways'
+import { usePutEnvironment } from '@/hooks/use-environments'
+import { useListeners } from '@/hooks/use-listeners'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -34,10 +28,20 @@ import {
 import { Input } from '@/components/ui/input'
 import { SelectDropdown } from '@/components/select-dropdown'
 
-type EnvironmentForm = EnvironmentCreate
+const environmentFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, and hyphens only'),
+  gatewayRef: z.string().min(1, 'Gateway is required'),
+  listenerRef: z.string().min(1, 'Listener is required'),
+  hostname: z.string().min(1, 'Hostname is required'),
+})
+
+type EnvironmentForm = z.infer<typeof environmentFormSchema>
 
 type EnvironmentActionDialogProps = {
-  currentRow?: Environment
+  currentRow?: EnvironmentResponse
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -48,60 +52,59 @@ export function EnvironmentActionDialog({
   onOpenChange,
 }: EnvironmentActionDialogProps) {
   const isEdit = !!currentRow
+  const { mutate: putEnvironment, isPending } = usePutEnvironment()
+  const { data: gatewaysData } = useGateways()
+  const { data: listenersData } = useListeners()
+
   const form = useForm<EnvironmentForm>({
     resolver: zodResolver(environmentFormSchema),
     defaultValues: isEdit
       ? {
-          name: currentRow.name,
-          gatewayId: currentRow.gatewayId,
-          port: currentRow.port,
-          hostname: currentRow.hostname,
-          sni: currentRow.sni,
-          tlsConfig: currentRow.tlsConfig,
-          policies: currentRow.policies,
+          name: currentRow.metadata.name,
+          gatewayRef: currentRow.spec.gatewayRef,
+          listenerRef: currentRow.spec.listenerRef,
+          hostname: currentRow.spec.hostname,
         }
       : {
           name: '',
-          gatewayId: '',
-          port: 443,
+          gatewayRef: '',
+          listenerRef: '',
           hostname: '',
-          sni: '',
-          tlsConfig: undefined,
-          policies: [],
         },
   })
 
-  // Watch gatewayId to filter available listeners/ports
-  const selectedGatewayId = useWatch({
-    control: form.control,
-    name: 'gatewayId',
-  })
-
   // Build gateway options
-  const gatewayOptions = mockGateways.map((gateway) => ({
-    label: gateway.name,
-    value: gateway.id,
+  const gatewayOptions = (gatewaysData?.items || []).map((gateway) => ({
+    label: gateway.metadata.name,
+    value: gateway.metadata.name,
   }))
 
-  // Build port/listener options based on selected gateway
-  const availablePorts = selectedGatewayId
-    ? mockListeners
-        .filter((l) => l.gatewayId === selectedGatewayId)
-        .map((listener) => ({
-          label: `${listener.port} (${listener.protocol})`,
-          value: listener.port.toString(),
-        }))
-    : []
-
-  // Track whether TLS should be shown
-  const [showTLS, setShowTLS] = useState(
-    isEdit ? !!currentRow.tlsConfig : false
-  )
+  // Build listener options
+  const listenerOptions = (listenersData?.items || []).map((listener) => ({
+    label: `${listener.metadata.name} (:${listener.spec.port})`,
+    value: listener.metadata.name,
+  }))
 
   const onSubmit = (values: EnvironmentForm) => {
-    form.reset()
-    showSubmittedData(values)
-    onOpenChange(false)
+    putEnvironment(
+      {
+        name: values.name,
+        body: {
+          spec: {
+            gatewayRef: values.gatewayRef,
+            listenerRef: values.listenerRef,
+            hostname: values.hostname,
+          },
+        },
+        ifMatch: isEdit ? currentRow.metadata.revision : undefined,
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+          onOpenChange(false)
+        },
+      }
+    )
   }
 
   return (
@@ -109,11 +112,10 @@ export function EnvironmentActionDialog({
       open={open}
       onOpenChange={(state) => {
         form.reset()
-        setShowTLS(false)
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-2xl'>
+      <DialogContent className='sm:max-w-lg'>
         <DialogHeader className='text-start'>
           <DialogTitle>
             {isEdit ? 'Edit Environment' : 'Create New Environment'}
@@ -125,7 +127,7 @@ export function EnvironmentActionDialog({
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='h-105 w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
+        <div className='w-[calc(100%+0.75rem)] overflow-y-auto py-1 pe-3'>
           <Form {...form}>
             <form
               id='environment-form'
@@ -160,7 +162,7 @@ export function EnvironmentActionDialog({
               />
               <FormField
                 control={form.control}
-                name='gatewayId'
+                name='gatewayRef'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
@@ -168,11 +170,7 @@ export function EnvironmentActionDialog({
                     </FormLabel>
                     <SelectDropdown
                       defaultValue={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value)
-                        // Reset port when gateway changes
-                        form.setValue('port', 443)
-                      }}
+                      onValueChange={field.onChange}
                       placeholder='Select gateway'
                       items={gatewayOptions}
                       className='col-span-4'
@@ -190,31 +188,27 @@ export function EnvironmentActionDialog({
               />
               <FormField
                 control={form.control}
-                name='port'
+                name='listenerRef'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>
-                      Listener Port
+                      Listener
                     </FormLabel>
                     <SelectDropdown
-                      defaultValue={field.value?.toString() || ''}
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      placeholder={
-                        selectedGatewayId
-                          ? 'Select listener port'
-                          : 'Select gateway first'
-                      }
-                      items={availablePorts}
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      placeholder='Select listener'
+                      items={listenerOptions}
                       className='col-span-4'
-                      disabled={!selectedGatewayId || isEdit}
+                      disabled={isEdit}
                       isControlled={true}
                     />
                     <FormMessage className='col-span-4 col-start-3' />
-                    <FormDescription className='col-span-4 col-start-3 text-xs'>
-                      {isEdit
-                        ? 'Listener port cannot be changed after creation'
-                        : 'Choose an existing listener on the selected gateway'}
-                    </FormDescription>
+                    {isEdit && (
+                      <FormDescription className='col-span-4 col-start-3 text-xs'>
+                        Listener cannot be changed after creation
+                      </FormDescription>
+                    )}
                   </FormItem>
                 )}
               />
@@ -241,86 +235,6 @@ export function EnvironmentActionDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name='sni'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>SNI</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='api.example.com'
-                        className='col-span-4'
-                        autoComplete='off'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                    <FormDescription className='col-span-4 col-start-3 text-xs'>
-                      Server Name Indication (leave empty for HTTP)
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-
-              <div className='grid grid-cols-6 items-center gap-x-4'>
-                <div className='col-span-2' />
-                <div className='col-span-4'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    onClick={() => setShowTLS(!showTLS)}
-                  >
-                    {showTLS ? 'Remove TLS Config' : 'Add TLS Config'}
-                  </Button>
-                </div>
-              </div>
-
-              {showTLS && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name='tlsConfig.certPath'
-                    render={({ field }) => (
-                      <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                        <FormLabel className='col-span-2 text-end'>
-                          Certificate Path
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder='/etc/certs/api.example.com.crt'
-                            className='col-span-4'
-                            autoComplete='off'
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage className='col-span-4 col-start-3' />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name='tlsConfig.keyPath'
-                    render={({ field }) => (
-                      <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                        <FormLabel className='col-span-2 text-end'>
-                          Key Path
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder='/etc/certs/api.example.com.key'
-                            className='col-span-4'
-                            autoComplete='off'
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage className='col-span-4 col-start-3' />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
             </form>
           </Form>
         </div>
@@ -332,8 +246,12 @@ export function EnvironmentActionDialog({
           >
             Cancel
           </Button>
-          <Button type='submit' form='environment-form'>
-            {isEdit ? 'Save Changes' : 'Create Environment'}
+          <Button type='submit' form='environment-form' disabled={isPending}>
+            {isPending
+              ? 'Saving...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Environment'}
           </Button>
         </DialogFooter>
       </DialogContent>

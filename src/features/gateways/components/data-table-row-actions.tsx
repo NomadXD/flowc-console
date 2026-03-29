@@ -1,8 +1,8 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { useNavigate } from '@tanstack/react-router'
 import { type Row } from '@tanstack/react-table'
-import { type Gateway } from '@/data/mock/flowc-data'
-import { Edit, Plus, Trash2, Eye } from 'lucide-react'
+import type { GatewayResponse } from '@/lib/api/openapi/types'
+import { Edit, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,14 +12,14 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useGateways } from './gateways-provider'
+import { useGatewaysContext } from './gateways-provider'
 
 type DataTableRowActionsProps = {
-  row: Row<Gateway>
+  row: Row<GatewayResponse>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentRow } = useGateways()
+  const { setOpen, setCurrentRow } = useGatewaysContext()
   const navigate = useNavigate()
 
   return (
@@ -36,7 +36,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       <DropdownMenuContent align='end' className='w-[180px]'>
         <DropdownMenuItem
           onClick={() => {
-            navigate({ to: `/gateways/${row.original.id}` })
+            navigate({ to: `/gateways/${row.original.metadata.name}` })
           }}
         >
           View Details
@@ -53,16 +53,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           Edit Gateway
           <DropdownMenuShortcut>
             <Edit size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            // TODO: Navigate to add listener page or open dialog
-          }}
-        >
-          Add Listener
-          <DropdownMenuShortcut>
-            <Plus size={16} />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

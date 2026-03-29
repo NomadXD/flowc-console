@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "knip": "knip"
+    "knip": "knip",
+    "api:copy-spec": "cp ../flowc/api/openapi.yaml src/lib/api/openapi/openapi.yaml",
+    "api:generate": "openapi-typescript src/lib/api/openapi/openapi.yaml -o src/lib/api/openapi/schema.d.ts",
+    "api:sync": "pnpm api:copy-spec && pnpm api:generate"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.58.1",
@@ -46,6 +49,7 @@
     "js-yaml": "^4.1.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.561.0",
+    "openapi-fetch": "^0.17.0",
     "react": "^19.2.3",
     "react-day-picker": "9.12.0",
     "react-dom": "^19.2.3",
@@ -77,6 +81,7 @@
     "eslint-plugin-react-refresh": "^0.4.25",
     "globals": "^16.5.0",
     "knip": "^5.73.4",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "~5.9.3",
