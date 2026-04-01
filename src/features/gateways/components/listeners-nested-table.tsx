@@ -18,11 +18,9 @@ interface ListenersNestedTableProps {
 export function ListenersNestedTable({
   gatewayName,
 }: ListenersNestedTableProps) {
-  const { data, isLoading } = useListeners()
+  const { data, isLoading } = useListeners({ gatewayRef: gatewayName })
 
-  const listeners = (data?.items || []).filter(
-    (l: ListenerResponse) => l.spec.gatewayRef === gatewayName
-  )
+  const listeners = data?.items || []
 
   if (isLoading) {
     return (

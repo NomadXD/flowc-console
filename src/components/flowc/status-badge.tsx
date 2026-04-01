@@ -10,6 +10,10 @@ export type StatusVariant =
   | 'error'
   | 'deploying'
   | 'success'
+  | 'ready'
+  | 'provisioning'
+  | 'pending'
+  | 'unknown'
 
 interface StatusBadgeProps {
   status: StatusVariant
@@ -69,6 +73,30 @@ const statusConfig: Record<
       'bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400',
     dotColor: 'bg-green-500',
   },
+  ready: {
+    label: 'Ready',
+    className:
+      'bg-green-500/10 text-green-700 hover:bg-green-500/20 dark:text-green-400',
+    dotColor: 'bg-green-500',
+  },
+  provisioning: {
+    label: 'Provisioning',
+    className:
+      'bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 dark:text-blue-400',
+    dotColor: 'bg-blue-500',
+  },
+  pending: {
+    label: 'Pending',
+    className:
+      'bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 dark:text-yellow-400',
+    dotColor: 'bg-yellow-500',
+  },
+  unknown: {
+    label: 'Unknown',
+    className:
+      'bg-gray-500/10 text-gray-700 hover:bg-gray-500/20 dark:text-gray-400',
+    dotColor: 'bg-gray-500',
+  },
 }
 
 export function StatusBadge({
@@ -76,7 +104,7 @@ export function StatusBadge({
   className,
   showDot = true,
 }: StatusBadgeProps) {
-  const config = statusConfig[status]
+  const config = statusConfig[status] || statusConfig.unknown
 
   return (
     <Badge

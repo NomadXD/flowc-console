@@ -1,7 +1,7 @@
 import type { APIResponse } from '@/lib/api/openapi/types'
 import { useGateways } from '@/hooks/use-gateways'
 import { useListeners } from '@/hooks/use-listeners'
-import { useEnvironments } from '@/hooks/use-environments'
+import { useVirtualHosts } from '@/hooks/use-virtual-hosts'
 import { usePutDeployment } from '@/hooks/use-deployments'
 import {
   Dialog,
@@ -43,19 +43,25 @@ export function DeployAPIDialog({
 }: DeployAPIDialogProps) {
   const [selectedGateway, setSelectedGateway] = useState<string>('')
   const [selectedListener, setSelectedListener] = useState<string>('')
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>('')
+  const [selectedVirtualHost, setSelectedVirtualHost] = useState<string>('')
 
   const { data: gatewaysData } = useGateways()
-  const { data: listenersData } = useListeners()
-  const { data: environmentsData } = useEnvironments()
+  const { data: listenersData } = useListeners(
+    selectedGateway ? { gatewayRef: selectedGateway } : undefined
+  )
+  const { data: virtualHostsData } = useVirtualHosts(
+    selectedGateway
+      ? { gatewayRef: selectedGateway, listenerRef: selectedListener || undefined }
+      : undefined
+  )
   const { mutate: putDeployment, isPending: isDeploying } = usePutDeployment()
 
   const gateways = gatewaysData?.items || []
   const listeners = listenersData?.items || []
-  const environments = environmentsData?.items || []
+  const virtualHosts = virtualHostsData?.items || []
 
   const handleDeploy = () => {
-    const deploymentName = `${api.metadata.name}-${selectedEnvironment}`
+    const deploymentName = `${api.metadata.name}-${selectedVirtualHost || selectedGateway}`
 
     putDeployment(
       {
@@ -63,9 +69,11 @@ export function DeployAPIDialog({
         body: {
           spec: {
             apiRef: api.metadata.name,
-            gatewayRef: selectedGateway,
-            listenerRef: selectedListener,
-            environmentRef: selectedEnvironment,
+            gateway: {
+              name: selectedGateway,
+              listener: selectedListener || undefined,
+              virtualHost: selectedVirtualHost || undefined,
+            },
           },
         },
       },
@@ -74,17 +82,13 @@ export function DeployAPIDialog({
           onOpenChange(false)
           setSelectedGateway('')
           setSelectedListener('')
-          setSelectedEnvironment('')
+          setSelectedVirtualHost('')
         },
       }
     )
   }
 
-  const canDeploy =
-    selectedGateway &&
-    selectedListener &&
-    selectedEnvironment &&
-    !isDeploying
+  const canDeploy = selectedGateway && !isDeploying
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -95,14 +99,14 @@ export function DeployAPIDialog({
             Deploy API: {api.spec.displayName || api.metadata.name}
           </DialogTitle>
           <DialogDescription>
-            Select the target environment to deploy this API.
+            Select the target gateway and virtual host to deploy this API.
           </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-6 py-4'>
           <Card>
             <CardHeader>
-              <CardTitle>Target Environment</CardTitle>
+              <CardTitle>Deployment Target</CardTitle>
               <CardDescription>
                 Choose where to deploy this API
               </CardDescription>
@@ -117,7 +121,7 @@ export function DeployAPIDialog({
                     onValueChange={(value) => {
                       setSelectedGateway(value)
                       setSelectedListener('')
-                      setSelectedEnvironment('')
+                      setSelectedVirtualHost('')
                     }}
                   >
                     <SelectTrigger id='gateway'>
@@ -138,12 +142,12 @@ export function DeployAPIDialog({
 
                 {/* Listener Selection */}
                 <div className='space-y-2'>
-                  <Label htmlFor='listener'>Listener</Label>
+                  <Label htmlFor='listener'>Listener (optional)</Label>
                   <Select
                     value={selectedListener}
                     onValueChange={(value) => {
                       setSelectedListener(value)
-                      setSelectedEnvironment('')
+                      setSelectedVirtualHost('')
                     }}
                     disabled={!selectedGateway}
                   >
@@ -151,49 +155,39 @@ export function DeployAPIDialog({
                       <SelectValue placeholder='Select a listener' />
                     </SelectTrigger>
                     <SelectContent>
-                      {listeners
-                        .filter(
-                          (l) => l.spec.gatewayRef === selectedGateway
-                        )
-                        .map((listener) => (
-                          <SelectItem
-                            key={listener.metadata.name}
-                            value={listener.metadata.name}
-                          >
-                            {listener.metadata.name} (port{' '}
-                            {listener.spec.port})
-                          </SelectItem>
-                        ))}
+                      {listeners.map((listener) => (
+                        <SelectItem
+                          key={listener.metadata.name}
+                          value={listener.metadata.name}
+                        >
+                          {listener.metadata.name} (port{' '}
+                          {listener.spec.port})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Environment Selection */}
+                {/* Virtual Host Selection */}
                 <div className='space-y-2'>
-                  <Label htmlFor='environment'>Environment</Label>
+                  <Label htmlFor='virtualHost'>Virtual Host (optional)</Label>
                   <Select
-                    value={selectedEnvironment}
-                    onValueChange={setSelectedEnvironment}
-                    disabled={!selectedListener}
+                    value={selectedVirtualHost}
+                    onValueChange={setSelectedVirtualHost}
+                    disabled={!selectedGateway}
                   >
-                    <SelectTrigger id='environment'>
-                      <SelectValue placeholder='Select an environment' />
+                    <SelectTrigger id='virtualHost'>
+                      <SelectValue placeholder='Select a virtual host' />
                     </SelectTrigger>
                     <SelectContent>
-                      {environments
-                        .filter(
-                          (e) =>
-                            e.spec.gatewayRef === selectedGateway &&
-                            e.spec.listenerRef === selectedListener
-                        )
-                        .map((env) => (
-                          <SelectItem
-                            key={env.metadata.name}
-                            value={env.metadata.name}
-                          >
-                            {env.metadata.name} ({env.spec.hostname})
-                          </SelectItem>
-                        ))}
+                      {virtualHosts.map((vhost) => (
+                        <SelectItem
+                          key={vhost.metadata.name}
+                          value={vhost.metadata.name}
+                        >
+                          {vhost.metadata.name} ({vhost.spec.hostname})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -223,14 +217,18 @@ export function DeployAPIDialog({
                     <dt className='text-muted-foreground'>Gateway</dt>
                     <dd className='font-medium'>{selectedGateway}</dd>
                   </div>
-                  <div>
-                    <dt className='text-muted-foreground'>Listener</dt>
-                    <dd className='font-medium'>{selectedListener}</dd>
-                  </div>
-                  <div>
-                    <dt className='text-muted-foreground'>Environment</dt>
-                    <dd className='font-medium'>{selectedEnvironment}</dd>
-                  </div>
+                  {selectedListener && (
+                    <div>
+                      <dt className='text-muted-foreground'>Listener</dt>
+                      <dd className='font-medium'>{selectedListener}</dd>
+                    </div>
+                  )}
+                  {selectedVirtualHost && (
+                    <div>
+                      <dt className='text-muted-foreground'>Virtual Host</dt>
+                      <dd className='font-medium'>{selectedVirtualHost}</dd>
+                    </div>
+                  )}
                   <div>
                     <dt className='text-muted-foreground'>Context Path</dt>
                     <dd className='font-medium font-mono'>

@@ -5,8 +5,8 @@ export type GatewayResponse = components['schemas']['GatewayResponse']
 export type GatewayProfileResponse =
   components['schemas']['GatewayProfileResponse']
 export type ListenerResponse = components['schemas']['ListenerResponse']
-export type EnvironmentResponse =
-  components['schemas']['EnvironmentResponse']
+export type VirtualHostResponse =
+  components['schemas']['VirtualHostResponse']
 export type APIResponse = components['schemas']['APIResponse']
 export type DeploymentResponse = components['schemas']['DeploymentResponse']
 
@@ -17,8 +17,8 @@ export type GatewayProfileListResponse =
   components['schemas']['GatewayProfileListResponse']
 export type ListenerListResponse =
   components['schemas']['ListenerListResponse']
-export type EnvironmentListResponse =
-  components['schemas']['EnvironmentListResponse']
+export type VirtualHostListResponse =
+  components['schemas']['VirtualHostListResponse']
 export type APIListResponse = components['schemas']['APIListResponse']
 export type DeploymentListResponse =
   components['schemas']['DeploymentListResponse']
@@ -28,7 +28,7 @@ export type GatewaySpec = components['schemas']['GatewaySpec']
 export type GatewayProfileSpec =
   components['schemas']['GatewayProfileSpec']
 export type ListenerSpec = components['schemas']['ListenerSpec']
-export type EnvironmentSpec = components['schemas']['EnvironmentSpec']
+export type VirtualHostSpec = components['schemas']['VirtualHostSpec']
 export type APISpec = components['schemas']['APISpec']
 export type DeploymentSpec = components['schemas']['DeploymentSpec']
 
@@ -37,8 +37,8 @@ export type GatewayPutRequest = components['schemas']['GatewayPutRequest']
 export type GatewayProfilePutRequest =
   components['schemas']['GatewayProfilePutRequest']
 export type ListenerPutRequest = components['schemas']['ListenerPutRequest']
-export type EnvironmentPutRequest =
-  components['schemas']['EnvironmentPutRequest']
+export type VirtualHostPutRequest =
+  components['schemas']['VirtualHostPutRequest']
 export type APIPutRequest = components['schemas']['APIPutRequest']
 export type DeploymentPutRequest =
   components['schemas']['DeploymentPutRequest']
@@ -48,7 +48,7 @@ export type GatewayStatus = components['schemas']['GatewayStatus']
 export type GatewayProfileStatus =
   components['schemas']['GatewayProfileStatus']
 export type ListenerStatus = components['schemas']['ListenerStatus']
-export type EnvironmentStatus = components['schemas']['EnvironmentStatus']
+export type VirtualHostStatus = components['schemas']['VirtualHostStatus']
 export type APIStatus = components['schemas']['APIStatus']
 export type DeploymentStatus = components['schemas']['DeploymentStatus']
 
@@ -67,6 +67,7 @@ export type UpstreamConfig = components['schemas']['UpstreamConfig']
 export type RoutingConfig = components['schemas']['RoutingConfig']
 export type PolicyInstance = components['schemas']['PolicyInstance']
 export type TLSConfig = components['schemas']['TLSConfig']
+export type ListenerPreset = components['schemas']['ListenerPreset']
 export type HTTPFilter = components['schemas']['HTTPFilter']
 export type ParsedInfo = components['schemas']['ParsedInfo']
 

@@ -1,11 +1,16 @@
 import { apiClient } from '../client'
 import type { ListenerPutRequest } from '../openapi/types'
 
+export type ListenerListParams = {
+  labels?: string
+  gatewayRef?: string
+}
+
 export const listenersService = {
-  list(labels?: string) {
+  list(params?: ListenerListParams) {
     return apiClient.GET('/api/v1/listeners', {
       params: {
-        query: { labels },
+        query: params,
       },
     })
   },

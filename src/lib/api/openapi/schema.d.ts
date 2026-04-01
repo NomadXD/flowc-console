@@ -102,45 +102,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/environments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List environments */
-        get: operations["listEnvironments"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/environments/{name}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Resource name */
-                name: string;
-            };
-            cookie?: never;
-        };
-        /** Get a Environment */
-        get: operations["getEnvironment"];
-        /** Create or update a Environment */
-        put: operations["putEnvironment"];
-        post?: never;
-        /** Delete a Environment */
-        delete: operations["deleteEnvironment"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/gatewayprofiles": {
         parameters: {
             query?: never;
@@ -324,6 +285,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/virtualhosts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List virtualhosts */
+        get: operations["listVirtualHosts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/virtualhosts/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Resource name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        /** Get a VirtualHost */
+        get: operations["getVirtualHost"];
+        /** Create or update a VirtualHost */
+        put: operations["putVirtualHost"];
+        post?: never;
+        /** Delete a VirtualHost */
+        delete: operations["deleteVirtualHost"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -460,9 +460,11 @@ export interface components {
         };
         DeploymentSpec: {
             apiRef: string;
-            environmentRef: string;
-            gatewayRef: string;
-            listenerRef: string;
+            gateway: {
+                listener?: string;
+                name: string;
+                virtualHost?: string;
+            };
             strategy?: components["schemas"]["StrategyConfig"];
         };
         DeploymentStatus: {
@@ -479,36 +481,6 @@ export interface components {
             bootstrapUrl: string;
             composeSnippet: string;
             runCommand: string;
-        };
-        EnvironmentListResponse: {
-            items: components["schemas"]["EnvironmentResponse"][];
-            kind: string;
-            total: number;
-        };
-        EnvironmentPutRequest: {
-            metadata?: {
-                conflictPolicy?: components["schemas"]["ConflictPolicy"];
-                labels?: {
-                    [key: string]: string;
-                };
-            };
-            spec: components["schemas"]["EnvironmentSpec"];
-        };
-        EnvironmentResponse: {
-            kind: components["schemas"]["ResourceKind"];
-            metadata: components["schemas"]["ResourceMeta"];
-            spec: components["schemas"]["EnvironmentSpec"];
-            status?: components["schemas"]["EnvironmentStatus"];
-        };
-        EnvironmentSpec: {
-            gatewayRef: string;
-            hostname: string;
-            httpFilters?: components["schemas"]["HTTPFilter"][];
-            listenerRef: string;
-        };
-        EnvironmentStatus: {
-            conditions?: components["schemas"]["Condition"][];
-            phase: string;
         };
         ErrorResponse: {
             /** Format: int64 */
@@ -721,7 +693,7 @@ export interface components {
             type: string;
         };
         /** @enum {string} */
-        ResourceKind: "Gateway" | "GatewayProfile" | "Listener" | "Environment" | "API" | "Deployment";
+        ResourceKind: "Gateway" | "GatewayProfile" | "Listener" | "VirtualHost" | "API" | "Deployment";
         ResourceMeta: {
             conflictPolicy?: components["schemas"]["ConflictPolicy"];
             /** Format: date-time */
@@ -786,6 +758,36 @@ export interface components {
             port: number;
             scheme?: string;
             timeout?: string;
+        };
+        VirtualHostListResponse: {
+            items: components["schemas"]["VirtualHostResponse"][];
+            kind: string;
+            total: number;
+        };
+        VirtualHostPutRequest: {
+            metadata?: {
+                conflictPolicy?: components["schemas"]["ConflictPolicy"];
+                labels?: {
+                    [key: string]: string;
+                };
+            };
+            spec: components["schemas"]["VirtualHostSpec"];
+        };
+        VirtualHostResponse: {
+            kind: components["schemas"]["ResourceKind"];
+            metadata: components["schemas"]["ResourceMeta"];
+            spec: components["schemas"]["VirtualHostSpec"];
+            status?: components["schemas"]["VirtualHostStatus"];
+        };
+        VirtualHostSpec: {
+            gatewayRef: string;
+            hostname: string;
+            httpFilters?: components["schemas"]["HTTPFilter"][];
+            listenerRef: string;
+        };
+        VirtualHostStatus: {
+            conditions?: components["schemas"]["Condition"][];
+            phase: string;
         };
     };
     responses: never;
@@ -1040,6 +1042,14 @@ export interface operations {
             query?: {
                 /** @description Label filter (comma-separated key=value pairs) */
                 labels?: string;
+                /** @description Filter by spec.gatewayRef value */
+                gatewayRef?: string;
+                /** @description Filter by spec.listenerRef value */
+                listenerRef?: string;
+                /** @description Filter by spec.virtualHostRef value */
+                virtualHostRef?: string;
+                /** @description Filter by spec.apiRef value */
+                apiRef?: string;
             };
             header?: never;
             path?: never;
@@ -1177,200 +1187,6 @@ export interface operations {
         };
     };
     deleteDeployment: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Resource revision for optimistic concurrency control */
-                "If-Match"?: number;
-            };
-            path: {
-                /** @description Resource name */
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Resource deleted */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DeleteResponse"];
-                };
-            };
-            /** @description Error response */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Error response */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Error response */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listEnvironments: {
-        parameters: {
-            query?: {
-                /** @description Label filter (comma-separated key=value pairs) */
-                labels?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description List of environments */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnvironmentListResponse"];
-                };
-            };
-            /** @description Error response */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getEnvironment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Resource name */
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The Environment resource */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnvironmentResponse"];
-                };
-            };
-            /** @description Error response */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Error response */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    putEnvironment: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Resource revision for optimistic concurrency control */
-                "If-Match"?: number;
-                /** @description Identifier of the managing entity for ownership tracking */
-                "X-Managed-By"?: string;
-            };
-            path: {
-                /** @description Resource name */
-                name: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["EnvironmentPutRequest"];
-            };
-        };
-        responses: {
-            /** @description Resource updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnvironmentResponse"];
-                };
-            };
-            /** @description Resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EnvironmentResponse"];
-                };
-            };
-            /** @description Error response */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Error response */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Error response */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteEnvironment: {
         parameters: {
             query?: never;
             header?: {
@@ -1898,6 +1714,8 @@ export interface operations {
             query?: {
                 /** @description Label filter (comma-separated key=value pairs) */
                 labels?: string;
+                /** @description Filter by spec.gatewayRef value */
+                gatewayRef?: string;
             };
             header?: never;
             path?: never;
@@ -2117,6 +1935,204 @@ export interface operations {
             };
             /** @description Error response */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listVirtualHosts: {
+        parameters: {
+            query?: {
+                /** @description Label filter (comma-separated key=value pairs) */
+                labels?: string;
+                /** @description Filter by spec.gatewayRef value */
+                gatewayRef?: string;
+                /** @description Filter by spec.listenerRef value */
+                listenerRef?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of virtualhosts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VirtualHostListResponse"];
+                };
+            };
+            /** @description Error response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getVirtualHost: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Resource name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The VirtualHost resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VirtualHostResponse"];
+                };
+            };
+            /** @description Error response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    putVirtualHost: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Resource revision for optimistic concurrency control */
+                "If-Match"?: number;
+                /** @description Identifier of the managing entity for ownership tracking */
+                "X-Managed-By"?: string;
+            };
+            path: {
+                /** @description Resource name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VirtualHostPutRequest"];
+            };
+        };
+        responses: {
+            /** @description Resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VirtualHostResponse"];
+                };
+            };
+            /** @description Resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VirtualHostResponse"];
+                };
+            };
+            /** @description Error response */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error response */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error response */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteVirtualHost: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Resource revision for optimistic concurrency control */
+                "If-Match"?: number;
+            };
+            path: {
+                /** @description Resource name */
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resource deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
+            /** @description Error response */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Error response */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

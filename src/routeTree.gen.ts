@@ -28,18 +28,23 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthenticatedListenersIndexRouteImport } from './routes/_authenticated/listeners/index'
+import { Route as AuthenticatedServicesIndexRouteImport } from './routes/_authenticated/services/index'
+import { Route as AuthenticatedSecretsIndexRouteImport } from './routes/_authenticated/secrets/index'
+import { Route as AuthenticatedPolicyEnginesIndexRouteImport } from './routes/_authenticated/policy-engines/index'
+import { Route as AuthenticatedObservabilityIndexRouteImport } from './routes/_authenticated/observability/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedGatewaysIndexRouteImport } from './routes/_authenticated/gateways/index'
-import { Route as AuthenticatedEnvironmentsIndexRouteImport } from './routes/_authenticated/environments/index'
+import { Route as AuthenticatedExtensionsIndexRouteImport } from './routes/_authenticated/extensions/index'
 import { Route as AuthenticatedDeploymentsIndexRouteImport } from './routes/_authenticated/deployments/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
+import { Route as AuthenticatedCertificatesIndexRouteImport } from './routes/_authenticated/certificates/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as AuthenticatedApisIndexRouteImport } from './routes/_authenticated/apis/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedSettingsGatewayProfilesRouteImport } from './routes/_authenticated/settings/gateway-profiles'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
@@ -48,7 +53,6 @@ import { Route as AuthenticatedGatewaysGatewayIdRouteRouteImport } from './route
 import { Route as AuthenticatedDeploymentsNewIndexRouteImport } from './routes/_authenticated/deployments/new/index'
 import { Route as AuthenticatedApisNewIndexRouteImport } from './routes/_authenticated/apis/new/index'
 import { Route as AuthenticatedApisApiIdIndexRouteImport } from './routes/_authenticated/apis/$apiId/index'
-import { Route as AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport } from './routes/_authenticated/environments/$gatewayId/$port/$envName/route'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -144,10 +148,28 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedListenersIndexRoute =
-  AuthenticatedListenersIndexRouteImport.update({
-    id: '/listeners/',
-    path: '/listeners/',
+const AuthenticatedServicesIndexRoute =
+  AuthenticatedServicesIndexRouteImport.update({
+    id: '/services/',
+    path: '/services/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSecretsIndexRoute =
+  AuthenticatedSecretsIndexRouteImport.update({
+    id: '/secrets/',
+    path: '/secrets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPolicyEnginesIndexRoute =
+  AuthenticatedPolicyEnginesIndexRouteImport.update({
+    id: '/policy-engines/',
+    path: '/policy-engines/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedObservabilityIndexRoute =
+  AuthenticatedObservabilityIndexRouteImport.update({
+    id: '/observability/',
+    path: '/observability/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHelpCenterIndexRoute =
@@ -162,10 +184,10 @@ const AuthenticatedGatewaysIndexRoute =
     path: '/gateways/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedEnvironmentsIndexRoute =
-  AuthenticatedEnvironmentsIndexRouteImport.update({
-    id: '/environments/',
-    path: '/environments/',
+const AuthenticatedExtensionsIndexRoute =
+  AuthenticatedExtensionsIndexRouteImport.update({
+    id: '/extensions/',
+    path: '/extensions/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDeploymentsIndexRoute =
@@ -179,6 +201,12 @@ const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   path: '/chats/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCertificatesIndexRoute =
+  AuthenticatedCertificatesIndexRouteImport.update({
+    id: '/certificates/',
+    path: '/certificates/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
   id: '/apps/',
   path: '/apps/',
@@ -209,6 +237,12 @@ const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsGatewayProfilesRoute =
+  AuthenticatedSettingsGatewayProfilesRouteImport.update({
+    id: '/gateway-profiles',
+    path: '/gateway-profiles',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 const AuthenticatedSettingsDisplayRoute =
@@ -259,12 +293,6 @@ const AuthenticatedApisApiIdIndexRoute =
     path: '/apis/$apiId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute =
-  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport.update({
-    id: '/environments/$gatewayId/$port/$envName',
-    path: '/environments/$gatewayId/$port/$envName',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -285,25 +313,29 @@ export interface FileRoutesByFullPath {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/gateway-profiles': typeof AuthenticatedSettingsGatewayProfilesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apis': typeof AuthenticatedApisIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/certificates': typeof AuthenticatedCertificatesIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/deployments': typeof AuthenticatedDeploymentsIndexRoute
-  '/environments': typeof AuthenticatedEnvironmentsIndexRoute
+  '/extensions': typeof AuthenticatedExtensionsIndexRoute
   '/gateways': typeof AuthenticatedGatewaysIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/listeners': typeof AuthenticatedListenersIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
+  '/policy-engines': typeof AuthenticatedPolicyEnginesIndexRoute
+  '/secrets': typeof AuthenticatedSecretsIndexRoute
+  '/services': typeof AuthenticatedServicesIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/apis/$apiId': typeof AuthenticatedApisApiIdIndexRoute
   '/apis/new': typeof AuthenticatedApisNewIndexRoute
   '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
-  '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -323,25 +355,29 @@ export interface FileRoutesByTo {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/gateway-profiles': typeof AuthenticatedSettingsGatewayProfilesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apis': typeof AuthenticatedApisIndexRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
+  '/certificates': typeof AuthenticatedCertificatesIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/deployments': typeof AuthenticatedDeploymentsIndexRoute
-  '/environments': typeof AuthenticatedEnvironmentsIndexRoute
+  '/extensions': typeof AuthenticatedExtensionsIndexRoute
   '/gateways': typeof AuthenticatedGatewaysIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/listeners': typeof AuthenticatedListenersIndexRoute
+  '/observability': typeof AuthenticatedObservabilityIndexRoute
+  '/policy-engines': typeof AuthenticatedPolicyEnginesIndexRoute
+  '/secrets': typeof AuthenticatedSecretsIndexRoute
+  '/services': typeof AuthenticatedServicesIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/apis/$apiId': typeof AuthenticatedApisApiIdIndexRoute
   '/apis/new': typeof AuthenticatedApisNewIndexRoute
   '/deployments/new': typeof AuthenticatedDeploymentsNewIndexRoute
-  '/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -366,25 +402,29 @@ export interface FileRoutesById {
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/settings/gateway-profiles': typeof AuthenticatedSettingsGatewayProfilesRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/_authenticated/apis/': typeof AuthenticatedApisIndexRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
+  '/_authenticated/certificates/': typeof AuthenticatedCertificatesIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/deployments/': typeof AuthenticatedDeploymentsIndexRoute
-  '/_authenticated/environments/': typeof AuthenticatedEnvironmentsIndexRoute
+  '/_authenticated/extensions/': typeof AuthenticatedExtensionsIndexRoute
   '/_authenticated/gateways/': typeof AuthenticatedGatewaysIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
-  '/_authenticated/listeners/': typeof AuthenticatedListenersIndexRoute
+  '/_authenticated/observability/': typeof AuthenticatedObservabilityIndexRoute
+  '/_authenticated/policy-engines/': typeof AuthenticatedPolicyEnginesIndexRoute
+  '/_authenticated/secrets/': typeof AuthenticatedSecretsIndexRoute
+  '/_authenticated/services/': typeof AuthenticatedServicesIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/apis/$apiId/': typeof AuthenticatedApisApiIdIndexRoute
   '/_authenticated/apis/new/': typeof AuthenticatedApisNewIndexRoute
   '/_authenticated/deployments/new/': typeof AuthenticatedDeploymentsNewIndexRoute
-  '/_authenticated/environments/$gatewayId/$port/$envName': typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -407,25 +447,29 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/gateway-profiles'
     | '/settings/notifications'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
     | '/apis'
     | '/apps'
+    | '/certificates'
     | '/chats'
     | '/deployments'
-    | '/environments'
+    | '/extensions'
     | '/gateways'
     | '/help-center'
-    | '/listeners'
+    | '/observability'
+    | '/policy-engines'
+    | '/secrets'
+    | '/services'
     | '/settings/'
     | '/tasks'
     | '/users'
     | '/apis/$apiId'
     | '/apis/new'
     | '/deployments/new'
-    | '/environments/$gatewayId/$port/$envName'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -445,25 +489,29 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/gateway-profiles'
     | '/settings/notifications'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
     | '/apis'
     | '/apps'
+    | '/certificates'
     | '/chats'
     | '/deployments'
-    | '/environments'
+    | '/extensions'
     | '/gateways'
     | '/help-center'
-    | '/listeners'
+    | '/observability'
+    | '/policy-engines'
+    | '/secrets'
+    | '/services'
     | '/settings'
     | '/tasks'
     | '/users'
     | '/apis/$apiId'
     | '/apis/new'
     | '/deployments/new'
-    | '/environments/$gatewayId/$port/$envName'
   id:
     | '__root__'
     | '/_authenticated'
@@ -487,25 +535,29 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
+    | '/_authenticated/settings/gateway-profiles'
     | '/_authenticated/settings/notifications'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
     | '/_authenticated/apis/'
     | '/_authenticated/apps/'
+    | '/_authenticated/certificates/'
     | '/_authenticated/chats/'
     | '/_authenticated/deployments/'
-    | '/_authenticated/environments/'
+    | '/_authenticated/extensions/'
     | '/_authenticated/gateways/'
     | '/_authenticated/help-center/'
-    | '/_authenticated/listeners/'
+    | '/_authenticated/observability/'
+    | '/_authenticated/policy-engines/'
+    | '/_authenticated/secrets/'
+    | '/_authenticated/services/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
     | '/_authenticated/apis/$apiId/'
     | '/_authenticated/apis/new/'
     | '/_authenticated/deployments/new/'
-    | '/_authenticated/environments/$gatewayId/$port/$envName'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -658,11 +710,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/listeners/': {
-      id: '/_authenticated/listeners/'
-      path: '/listeners'
-      fullPath: '/listeners'
-      preLoaderRoute: typeof AuthenticatedListenersIndexRouteImport
+    '/_authenticated/services/': {
+      id: '/_authenticated/services/'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof AuthenticatedServicesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/secrets/': {
+      id: '/_authenticated/secrets/'
+      path: '/secrets'
+      fullPath: '/secrets'
+      preLoaderRoute: typeof AuthenticatedSecretsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/policy-engines/': {
+      id: '/_authenticated/policy-engines/'
+      path: '/policy-engines'
+      fullPath: '/policy-engines'
+      preLoaderRoute: typeof AuthenticatedPolicyEnginesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/observability/': {
+      id: '/_authenticated/observability/'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/help-center/': {
@@ -679,11 +752,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGatewaysIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/environments/': {
-      id: '/_authenticated/environments/'
-      path: '/environments'
-      fullPath: '/environments'
-      preLoaderRoute: typeof AuthenticatedEnvironmentsIndexRouteImport
+    '/_authenticated/extensions/': {
+      id: '/_authenticated/extensions/'
+      path: '/extensions'
+      fullPath: '/extensions'
+      preLoaderRoute: typeof AuthenticatedExtensionsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/deployments/': {
@@ -698,6 +771,13 @@ declare module '@tanstack/react-router' {
       path: '/chats'
       fullPath: '/chats'
       preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/certificates/': {
+      id: '/_authenticated/certificates/'
+      path: '/certificates'
+      fullPath: '/certificates'
+      preLoaderRoute: typeof AuthenticatedCertificatesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/apps/': {
@@ -740,6 +820,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/gateway-profiles': {
+      id: '/_authenticated/settings/gateway-profiles'
+      path: '/gateway-profiles'
+      fullPath: '/settings/gateway-profiles'
+      preLoaderRoute: typeof AuthenticatedSettingsGatewayProfilesRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
     '/_authenticated/settings/display': {
@@ -798,13 +885,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApisApiIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/environments/$gatewayId/$port/$envName': {
-      id: '/_authenticated/environments/$gatewayId/$port/$envName'
-      path: '/environments/$gatewayId/$port/$envName'
-      fullPath: '/environments/$gatewayId/$port/$envName'
-      preLoaderRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
@@ -812,6 +892,7 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
+  AuthenticatedSettingsGatewayProfilesRoute: typeof AuthenticatedSettingsGatewayProfilesRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
@@ -821,6 +902,8 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
+    AuthenticatedSettingsGatewayProfilesRoute:
+      AuthenticatedSettingsGatewayProfilesRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
@@ -838,18 +921,21 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedApisIndexRoute: typeof AuthenticatedApisIndexRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
+  AuthenticatedCertificatesIndexRoute: typeof AuthenticatedCertificatesIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDeploymentsIndexRoute: typeof AuthenticatedDeploymentsIndexRoute
-  AuthenticatedEnvironmentsIndexRoute: typeof AuthenticatedEnvironmentsIndexRoute
+  AuthenticatedExtensionsIndexRoute: typeof AuthenticatedExtensionsIndexRoute
   AuthenticatedGatewaysIndexRoute: typeof AuthenticatedGatewaysIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
-  AuthenticatedListenersIndexRoute: typeof AuthenticatedListenersIndexRoute
+  AuthenticatedObservabilityIndexRoute: typeof AuthenticatedObservabilityIndexRoute
+  AuthenticatedPolicyEnginesIndexRoute: typeof AuthenticatedPolicyEnginesIndexRoute
+  AuthenticatedSecretsIndexRoute: typeof AuthenticatedSecretsIndexRoute
+  AuthenticatedServicesIndexRoute: typeof AuthenticatedServicesIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedApisApiIdIndexRoute: typeof AuthenticatedApisApiIdIndexRoute
   AuthenticatedApisNewIndexRoute: typeof AuthenticatedApisNewIndexRoute
   AuthenticatedDeploymentsNewIndexRoute: typeof AuthenticatedDeploymentsNewIndexRoute
-  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute: typeof AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -860,19 +946,21 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedApisIndexRoute: AuthenticatedApisIndexRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
+  AuthenticatedCertificatesIndexRoute: AuthenticatedCertificatesIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDeploymentsIndexRoute: AuthenticatedDeploymentsIndexRoute,
-  AuthenticatedEnvironmentsIndexRoute: AuthenticatedEnvironmentsIndexRoute,
+  AuthenticatedExtensionsIndexRoute: AuthenticatedExtensionsIndexRoute,
   AuthenticatedGatewaysIndexRoute: AuthenticatedGatewaysIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
-  AuthenticatedListenersIndexRoute: AuthenticatedListenersIndexRoute,
+  AuthenticatedObservabilityIndexRoute: AuthenticatedObservabilityIndexRoute,
+  AuthenticatedPolicyEnginesIndexRoute: AuthenticatedPolicyEnginesIndexRoute,
+  AuthenticatedSecretsIndexRoute: AuthenticatedSecretsIndexRoute,
+  AuthenticatedServicesIndexRoute: AuthenticatedServicesIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedApisApiIdIndexRoute: AuthenticatedApisApiIdIndexRoute,
   AuthenticatedApisNewIndexRoute: AuthenticatedApisNewIndexRoute,
   AuthenticatedDeploymentsNewIndexRoute: AuthenticatedDeploymentsNewIndexRoute,
-  AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute:
-    AuthenticatedEnvironmentsGatewayIdPortEnvNameRouteRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

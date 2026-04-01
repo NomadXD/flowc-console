@@ -4,25 +4,27 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { deploymentsService } from '@/lib/api/services/deployments'
+import {
+  deploymentsService,
+  type DeploymentListParams,
+} from '@/lib/api/services/deployments'
 import { throwOnError } from '@/lib/api/throw-on-error'
 import type { DeploymentPutRequest } from '@/lib/api/openapi/types'
 
 export const deploymentsKeys = {
   all: ['deployments'] as const,
   lists: () => [...deploymentsKeys.all, 'list'] as const,
-  list: (labels?: string) =>
-    [...deploymentsKeys.lists(), { labels }] as const,
+  list: (params?: DeploymentListParams) =>
+    [...deploymentsKeys.lists(), params] as const,
   details: () => [...deploymentsKeys.all, 'detail'] as const,
   detail: (name: string) =>
     [...deploymentsKeys.details(), name] as const,
 }
 
-export function useDeployments(labels?: string) {
+export function useDeployments(params?: DeploymentListParams) {
   return useQuery({
-    queryKey: deploymentsKeys.list(labels),
-    queryFn: () =>
-      deploymentsService.list(labels).then(throwOnError),
+    queryKey: deploymentsKeys.list(params),
+    queryFn: () => deploymentsService.list(params).then(throwOnError),
   })
 }
 

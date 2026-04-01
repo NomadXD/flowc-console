@@ -1,11 +1,19 @@
 import { apiClient } from '../client'
 import type { DeploymentPutRequest } from '../openapi/types'
 
+export type DeploymentListParams = {
+  labels?: string
+  gatewayRef?: string
+  listenerRef?: string
+  virtualHostRef?: string
+  apiRef?: string
+}
+
 export const deploymentsService = {
-  list(labels?: string) {
+  list(params?: DeploymentListParams) {
     return apiClient.GET('/api/v1/deployments', {
       params: {
-        query: { labels },
+        query: params,
       },
     })
   },

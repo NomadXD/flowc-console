@@ -4,24 +4,26 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { listenersService } from '@/lib/api/services/listeners'
+import {
+  listenersService,
+  type ListenerListParams,
+} from '@/lib/api/services/listeners'
 import { throwOnError } from '@/lib/api/throw-on-error'
 import type { ListenerPutRequest } from '@/lib/api/openapi/types'
 
 export const listenersKeys = {
   all: ['listeners'] as const,
   lists: () => [...listenersKeys.all, 'list'] as const,
-  list: (labels?: string) =>
-    [...listenersKeys.lists(), { labels }] as const,
+  list: (params?: ListenerListParams) =>
+    [...listenersKeys.lists(), params] as const,
   details: () => [...listenersKeys.all, 'detail'] as const,
   detail: (name: string) => [...listenersKeys.details(), name] as const,
 }
 
-export function useListeners(labels?: string) {
+export function useListeners(params?: ListenerListParams) {
   return useQuery({
-    queryKey: listenersKeys.list(labels),
-    queryFn: () =>
-      listenersService.list(labels).then(throwOnError),
+    queryKey: listenersKeys.list(params),
+    queryFn: () => listenersService.list(params).then(throwOnError),
   })
 }
 

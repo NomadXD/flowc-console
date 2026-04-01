@@ -1,4 +1,5 @@
-import { getRouteApi } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import type { NavigateFn } from '@/hooks/use-table-url-state'
 import { Loader2 } from 'lucide-react'
 import { useListeners } from '@/hooks/use-listeners'
 import { ConfigDrawer } from '@/components/config-drawer'
@@ -12,11 +13,9 @@ import { ListenersPrimaryButtons } from './components/listeners-primary-buttons'
 import { ListenersProvider } from './components/listeners-provider'
 import { ListenersTable } from './components/listeners-table'
 
-const route = getRouteApi('/_authenticated/listeners/')
-
 export function Listeners() {
-  const search = route.useSearch()
-  const navigate = route.useNavigate()
+  const search = useSearch({ strict: false })
+  const navigate = useNavigate()
 
   const { data, isLoading, error } = useListeners()
   const listeners = data?.items || []
@@ -57,7 +56,7 @@ export function Listeners() {
           <ListenersTable
             data={listeners}
             search={search}
-            navigate={navigate}
+            navigate={navigate as NavigateFn}
           />
         )}
       </Main>
