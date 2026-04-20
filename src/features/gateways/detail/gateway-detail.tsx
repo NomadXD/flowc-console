@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useGateway } from '@/hooks/use-gateways'
@@ -15,18 +14,32 @@ import {
   GatewayApisTab,
   GatewayPoliciesTab,
   GatewayConfigTab,
+  GatewaySetupTab,
 } from './components'
 
 const route = getRouteApi('/_authenticated/gateways/$gatewayId')
 
 export function GatewayDetail() {
   const { gatewayId } = route.useParams()
+  const { tab } = route.useSearch()
+  const navigate = route.useNavigate()
   const { data: gateway, isLoading, error } = useGateway(gatewayId)
-  const [activeTab, setActiveTab] = useState('overview')
+
+  const activeTab = tab || 'overview'
+
+  const setActiveTab = (value: string) => {
+    navigate({
+      search: (prev) => ({ ...prev, tab: value === 'overview' ? undefined : value }),
+      replace: true,
+    })
+  }
 
   const breadcrumbItems = [
     { label: 'Gateways', href: '/gateways' },
-    { label: gateway?.metadata?.name || gatewayId, href: `/gateways/${gatewayId}` },
+    {
+      label: gateway?.metadata?.name || gatewayId,
+      href: `/gateways/${gatewayId}`,
+    },
   ]
 
   return (
@@ -78,6 +91,7 @@ export function GatewayDetail() {
             >
               <TabsList>
                 <TabsTrigger value='overview'>Overview</TabsTrigger>
+                <TabsTrigger value='setup'>Setup</TabsTrigger>
                 <TabsTrigger value='listeners'>Listeners</TabsTrigger>
                 <TabsTrigger value='apis'>Deployments</TabsTrigger>
                 <TabsTrigger value='policies'>Policies</TabsTrigger>
@@ -86,6 +100,10 @@ export function GatewayDetail() {
 
               <TabsContent value='overview' className='mt-4'>
                 <GatewayOverview gateway={gateway} />
+              </TabsContent>
+
+              <TabsContent value='setup' className='mt-4'>
+                <GatewaySetupTab gateway={gateway} />
               </TabsContent>
 
               <TabsContent value='listeners' className='mt-4'>

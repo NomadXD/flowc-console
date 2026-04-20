@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Info, Loader2 } from 'lucide-react'
@@ -83,6 +84,7 @@ export function GatewayActionDialog({
   const { data: profilesData, isLoading: profilesLoading } =
     useGatewayProfiles()
 
+  const navigate = useNavigate()
   const profiles = profilesData?.items || []
 
   const [createDefaultListener, setCreateDefaultListener] = useState(!isEdit)
@@ -190,6 +192,15 @@ export function GatewayActionDialog({
 
           form.reset()
           onOpenChange(false)
+
+          // Navigate to setup tab after creating a new gateway
+          if (!isEdit) {
+            navigate({
+              to: '/gateways/$gatewayId',
+              params: { gatewayId: values.name },
+              search: { tab: 'setup' },
+            })
+          }
         },
       }
     )
